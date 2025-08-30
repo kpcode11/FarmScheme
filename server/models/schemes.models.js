@@ -1,0 +1,46 @@
+import mongoose, { Schema } from "mongoose";
+
+const schemeScheme = new Schema(
+  {
+    scheme_name: {
+      type: String,
+    },
+    slug: {
+      type: String,
+      lowercase: true,
+    },
+    details: {
+      type: String,
+    },
+    benefits: {
+      type: String,
+    },
+    eligibility: {
+      type: String,
+    },
+    application: {
+      type: String,
+    },
+    documents: {
+      type: String,
+    },
+    level: {
+      type: String,
+    },
+    schemeCategory: {
+      type: String,
+    },
+    tags: {
+      type: Array,
+      lowercase: true,
+    },
+    States: {
+      type: String,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+export const schemes = mongoose.model("schemes", schemeScheme);
