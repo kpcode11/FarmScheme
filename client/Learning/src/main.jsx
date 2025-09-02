@@ -21,7 +21,7 @@ const router = createBrowserRouter(
     <Route path="/" element={<Layout />}>
       <Route path="" element={<Dashboard />} />
       <Route path="schemes" element={<SchemesList />} />
-      <Route path="maps" element={<SchemesList />} />
+      <Route path="maps" element={<Maps />} />
     </Route>
   )
 );
