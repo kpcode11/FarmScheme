@@ -1,4 +1,5 @@
 import React from "react";
+import { Link, useLocation } from "react-router-dom";
 import {
   Button,
   Navbar,
@@ -9,9 +10,10 @@ import {
 } from "flowbite-react";
 
 function Navvbar() {
+  const location = useLocation();
   return (
     <Navbar fluid rounded>
-      <NavbarBrand href="https://flowbite-react.com">
+      <NavbarBrand as={Link} to="/">
         <img
           src="../public/Marvel_Logo.svg"
           className="mr-3 h-6 sm:h-9"
@@ -26,13 +28,19 @@ function Navvbar() {
         <NavbarToggle />
       </div>
       <NavbarCollapse>
-        <NavbarLink href="#" active>
+        <NavbarLink as={Link} to="/" active={location.pathname == "/"}>
           Home
         </NavbarLink>
-        <NavbarLink href="#">About</NavbarLink>
-        <NavbarLink href="#">Services</NavbarLink>
-        <NavbarLink href="#">Pricing</NavbarLink>
-        <NavbarLink href="#">Contact</NavbarLink>
+        <NavbarLink
+          as={Link}
+          to="/schemes"
+          active={location.pathname == "/schemes"}
+        >
+          Schemes
+        </NavbarLink>
+        <NavbarLink as={Link} to="/maps" active={location.pathname == "/maps"}>
+          Maps
+        </NavbarLink>
       </NavbarCollapse>
     </Navbar>
   );

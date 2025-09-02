@@ -14,11 +14,13 @@ import {
 import SchemesList from "./components/SchemesList/SchemesList.jsx";
 import Layout from "./Layout.jsx";
 import Maps from "./components/Maps/Maps.jsx";
+import Dashboard from "./components/Dashboard/Dashboard.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<Layout />}>
-      <Route path="" element={<SchemesList />} />
+      <Route path="" element={<Dashboard />} />
+      <Route path="schemes" element={<SchemesList />} />
       <Route path="maps" element={<SchemesList />} />
     </Route>
   )
