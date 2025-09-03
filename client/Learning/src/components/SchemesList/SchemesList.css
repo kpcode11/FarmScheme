@@ -5,6 +5,7 @@
   padding: 20px;
 }
 
+
 .pagination-controls {
   display: flex;
   justify-content: space-between;
@@ -63,7 +64,7 @@
 
 .scheme-details p {
   margin: 8px 0;
-  font-size: 0.9rem;
+  font-size: 1rem;
   line-height: 1.4;
 }
 
