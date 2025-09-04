@@ -17,9 +17,9 @@ const SchemesList = () => {
     const fetchSchemes = async () => {
       try {
         setLoading(true);
-        console.log(
-          `Making request to: http://localhost:8001/api/v1/schemes?page=${currentPage}&limit=${limit}`
-        );
+        // console.log(
+        //   `Making request to: http://localhost:8001/api/v1/schemes?page=${currentPage}&limit=${limit}`
+        // );
 
         // Include pagination parameters in the request
         const response = await axios.get(
@@ -27,12 +27,12 @@ const SchemesList = () => {
         );
 
         // Debug the response structure
-        console.log("Full response:", response);
-        console.log("Response data:", response.data);
-        console.log("Response data.data:", response.data.data);
+        // console.log("Full response:", response);
+        // console.log("Response data:", response.data);
+        // console.log("Response data.data:", response.data.data);
 
         if (response.data && response.data.data && response.data.data.scheme) {
-          console.log("Schemes array:", response.data.data.scheme);
+          // console.log("Schemes array:", response.data.data.scheme);
           setSchemes(response.data.data.scheme);
 
           // Set pagination info from response
@@ -67,7 +67,7 @@ const SchemesList = () => {
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
-      window.scrollTo(0, 0); // Scroll to top when page changes
+      window.scrollTo({ top: 0, left: 0, behavior: "smooth" }); // Scroll to top when page changes
     }
   };
 
@@ -109,13 +109,13 @@ const SchemesList = () => {
   };
 
   // Debug what we're trying to render
-  console.log("Current schemes state:", schemes);
-  console.log("Pagination state:", {
-    currentPage,
-    totalPages,
-    totalSchemes,
-    limit,
-  });
+  // console.log("Current schemes state:", schemes);
+  // console.log("Pagination state:", {
+  //   currentPage,
+  //   totalPages,
+  //   totalSchemes,
+  //   limit,
+  // });
 
   if (loading) return <div className="loading">Loading schemes...</div>;
   if (error) return <div className="error">{error}</div>;
@@ -160,7 +160,7 @@ const SchemesList = () => {
       <div className="schemes-list">
         {schemes.map((scheme) => {
           // Debug each scheme object
-          console.log("Rendering scheme:", scheme);
+          // console.log("Rendering scheme:", scheme);
 
           /**/
 
@@ -176,7 +176,8 @@ const SchemesList = () => {
                 <div className="scheme-details">
                   {scheme.schemeCategory && (
                     <p>
-                      <b className="text-lg">Category:</b> {scheme.schemeCategory}
+                      <b className="text-lg">Category:</b>{" "}
+                      {scheme.schemeCategory}
                     </p>
                   )}
                   {scheme.level && (
@@ -186,7 +187,8 @@ const SchemesList = () => {
                   )}
                   {scheme.details && (
                     <p>
-                      <b className="text-lg">Details:</b> {scheme.details.substring(0, 200)}
+                      <b className="text-lg">Details:</b>{" "}
+                      {scheme.details.substring(0, 200)}
                       ...
                     </p>
                   )}
