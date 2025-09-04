@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./SchemesList.css"; // Make sure to create this CSS file
+import { Link } from "react-router-dom";
 
 const SchemesList = () => {
   const [schemes, setSchemes] = useState([]);
@@ -198,7 +199,12 @@ const SchemesList = () => {
                   there are title and actions parts
                 </p> */}
                 <div className="card-actions justify-end">
-                  <button className="btn">Details</button>
+                  <Link
+                    to={`/schemes/${scheme._id}`}
+                    className="btn btn-primary"
+                  >
+                    View Details
+                  </Link>
                 </div>
               </div>
             </div>

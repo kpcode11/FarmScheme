@@ -52,7 +52,9 @@ const getStateSchemes = asyncHandler(async (req, res) => {
   const skip = (page - 1) * limit;
 
   const totalschemes = await SchemeModel.countDocuments({ level: "State" });
-  const allStateSchemes = await SchemeModel.find({ level: "State" }).skip(skip).limit(limit);
+  const allStateSchemes = await SchemeModel.find({ level: "State" })
+    .skip(skip)
+    .limit(limit);
 
   if (!allStateSchemes.length) {
     return res.status(200).json(
@@ -91,7 +93,9 @@ const getCentralSchemes = asyncHandler(async (req, res) => {
   const skip = (page - 1) * limit;
 
   const totalschemes = await SchemeModel.countDocuments({ level: "Central" });
-  const allCentralSchemes = await SchemeModel.find({ level: "Central" }).skip(skip).limit(limit);
+  const allCentralSchemes = await SchemeModel.find({ level: "Central" })
+    .skip(skip)
+    .limit(limit);
 
   if (!allCentralSchemes.length) {
     return res.status(200).json(
@@ -122,4 +126,19 @@ const getCentralSchemes = asyncHandler(async (req, res) => {
   );
 });
 
-export { getAllschemes, getStateSchemes, getCentralSchemes };
+// Get Schemes by Id - MOVED OUTSIDE and FIXED
+const getSchemeById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const scheme = await SchemeModel.findById(id);
+
+  if (!scheme) {
+    throw new ApiError(404, "Scheme not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, scheme, "Scheme fetched successfully"));
+});
+
+export { getAllschemes, getStateSchemes, getCentralSchemes, getSchemeById };
