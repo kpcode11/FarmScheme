@@ -10,7 +10,7 @@ const getAllschemes = asyncHandler(async (req, res) => {
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
 
-  console.log("Pagination params:", { page, limit, skip }); // Debug log
+  // console.log("Pagination params:", { page, limit, skip }); // Debug log
 
   const totalschemes = await SchemeModel.countDocuments();
   const allSchemes = await SchemeModel.find({}).skip(skip).limit(limit);
