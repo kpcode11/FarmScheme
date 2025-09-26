@@ -2,7 +2,7 @@ import json
 from pymongo import MongoClient
 
 # Connect to Atlas
-client = MongoClient("mongodb+srv://kpcode11:Kesh310509@vidtube.rqu43sk.mongodb.net")
+client = MongoClient("mongodb+srv://username: Password@clustername.rqu43sk.mongodb.net")
 db = client["farmers"]
 collection = db["schemes"]
 
