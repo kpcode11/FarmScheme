@@ -141,4 +141,62 @@ const getSchemeById = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, scheme, "Scheme fetched successfully"));
 });
 
-export { getAllschemes, getStateSchemes, getCentralSchemes, getSchemeById };
+// Get eligibility questions for a scheme
+const getEligibilityQuestions = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const scheme = await SchemeModel.findById(id).select("eligibilityQuestions scheme_name");
+  if (!scheme) {
+    throw new ApiError(404, "Scheme not found");
+  }
+
+  const questions = Array.isArray(scheme.eligibilityQuestions)
+    ? scheme.eligibilityQuestions
+    : [];
+
+  return res.status(200).json(
+    new ApiResponse(200, { questions, schemeId: id, schemeName: scheme.scheme_name }, "Eligibility questions fetched")
+  );
+});
+
+// Check eligibility by evaluating provided answers against expected answers
+const checkEligibility = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { answers } = req.body || {};
+
+  const scheme = await SchemeModel.findById(id).select("eligibilityQuestions scheme_name");
+  if (!scheme) {
+    throw new ApiError(404, "Scheme not found");
+  }
+
+  const questions = Array.isArray(scheme.eligibilityQuestions)
+    ? scheme.eligibilityQuestions
+    : [];
+
+  if (!answers || typeof answers !== "object") {
+    throw new ApiError(400, "Invalid answers payload");
+  }
+
+  const failures = [];
+  for (const q of questions) {
+    const provided = (answers[q.key] || "").toString().toLowerCase();
+    const expected = (q.expectedAnswer || "").toString().toLowerCase();
+
+    if (provided !== "yes" && provided !== "no") {
+      failures.push({ key: q.key, question: q.question, reason: "Answer must be 'yes' or 'no'" });
+      continue;
+    }
+
+    if (expected && provided !== expected) {
+      failures.push({ key: q.key, question: q.question, reason: q.failureMessage || `Expected answer: ${expected.toUpperCase()}` });
+    }
+  }
+
+  const eligible = failures.length === 0;
+
+  return res.status(200).json(
+    new ApiResponse(200, { eligible, failures }, eligible ? "Eligible" : "Not eligible")
+  );
+});
+
+export { getAllschemes, getStateSchemes, getCentralSchemes, getSchemeById, getEligibilityQuestions, checkEligibility };

@@ -9,6 +9,10 @@ const SchemeDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [eligibilityQuestions, setEligibilityQuestions] = useState([]);
+  const [answers, setAnswers] = useState({});
+  const [eligibilityLoading, setEligibilityLoading] = useState(false);
+  const [eligibilityResult, setEligibilityResult] = useState(null);
 
   // Refs for scrolling to sections
   const overviewRef = useRef(null);
@@ -68,6 +72,37 @@ const SchemeDetail = () => {
         break;
       default:
         break;
+    }
+  };
+
+  const loadEligibilityQuestions = async () => {
+    if (!schemeId) return;
+    try {
+      setEligibilityLoading(true);
+      setEligibilityResult(null);
+      const resp = await axios.get(`http://localhost:8001/api/v1/schemes/${schemeId}/eligibility-questions`);
+      const questions = resp?.data?.data?.questions || [];
+      setEligibilityQuestions(questions);
+      const initial = {};
+      questions.forEach(q => { initial[q.key] = ''; });
+      setAnswers(initial);
+    } catch (e) {
+      setEligibilityResult({ eligible: false, failures: [{ key: 'load', question: 'Load questions', reason: e.response?.data?.message || e.message }] });
+    } finally {
+      setEligibilityLoading(false);
+    }
+  };
+
+  const submitEligibility = async () => {
+    if (!schemeId) return;
+    try {
+      setEligibilityLoading(true);
+      const resp = await axios.post(`http://localhost:8001/api/v1/schemes/${schemeId}/check-eligibility`, { answers });
+      setEligibilityResult(resp?.data?.data || { eligible: false, failures: [] });
+    } catch (e) {
+      setEligibilityResult({ eligible: false, failures: [{ key: 'submit', question: 'Submit answers', reason: e.response?.data?.message || e.message }] });
+    } finally {
+      setEligibilityLoading(false);
     }
   };
 
@@ -138,6 +173,13 @@ const SchemeDetail = () => {
           <div className="flex gap-2">
             <button className="btn btn-primary">
               Apply Now
+            </button>
+            <button
+              className="btn btn-accent"
+              onClick={loadEligibilityQuestions}
+              disabled={eligibilityLoading}
+            >
+              {eligibilityLoading ? 'Loading...' : 'Check Eligibility'}
             </button>
             <button 
               className="btn btn-outline"
@@ -247,36 +289,79 @@ const SchemeDetail = () => {
             <div className="card-body">
               <h2 className="card-title text-2xl mb-4">Eligibility Criteria</h2>
               <div className="space-y-4">
-                {scheme.eligibility ? (
-                  <p className="text-white text-lg">{scheme.eligibility}</p>
-                ) : (
-                  <div className="space-y-3">
+                {eligibilityQuestions && eligibilityQuestions.length > 0 ? (
+                  <div className="space-y-4">
                     <div className="alert alert-info">
-                      <span>Check if you meet the following criteria:</span>
+                      <span>Answer the questions below to check your eligibility.</span>
                     </div>
-                    <ul className="space-y-3">
-                      <li className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-primary rounded-full"></div>
-                        <span className="text-white">Must be a registered farmer with valid documents</span>
-                      </li>
-                      <li className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-primary rounded-full"></div>
-                        <span className="text-white">Age between 18-60 years</span>
-                      </li>
-                      <li className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-primary rounded-full"></div>
-                        <span className="text-white">Must have valid land ownership documents</span>
-                      </li>
-                      <li className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-primary rounded-full"></div>
-                        <span className="text-white">Annual income below specified limit</span>
-                      </li>
-                      <li className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-primary rounded-full"></div>
-                        <span className="text-white">Must belong to eligible category (if applicable)</span>
-                      </li>
-                    </ul>
+                    <div className="space-y-3">
+                      {eligibilityQuestions.map((q) => (
+                        <div key={q.key} className="flex flex-col gap-2 p-3 rounded border border-base-200">
+                          <label className="text-white font-medium">{q.question}</label>
+                          <div className="flex gap-4">
+                            <label className="flex items-center gap-2 text-white">
+                              <input
+                                type="radio"
+                                name={q.key}
+                                className="radio radio-primary"
+                                checked={answers[q.key] === 'yes'}
+                                onChange={() => setAnswers({ ...answers, [q.key]: 'yes' })}
+                              />
+                              Yes
+                            </label>
+                            <label className="flex items-center gap-2 text-white">
+                              <input
+                                type="radio"
+                                name={q.key}
+                                className="radio radio-primary"
+                                checked={answers[q.key] === 'no'}
+                                onChange={() => setAnswers({ ...answers, [q.key]: 'no' })}
+                              />
+                              No
+                            </label>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex gap-3">
+                      <button className="btn btn-primary" onClick={submitEligibility} disabled={eligibilityLoading}>
+                        {eligibilityLoading ? 'Checking...' : 'Submit'}
+                      </button>
+                      <button className="btn" onClick={() => { setEligibilityQuestions([]); setEligibilityResult(null); }}>
+                        Cancel
+                      </button>
+                    </div>
+
+                    {eligibilityResult && (
+                      <div className={`alert ${eligibilityResult.eligible ? 'alert-success' : 'alert-error'} mt-2`}>
+                        <div className="flex flex-col gap-2">
+                          <span className="text-white font-semibold">
+                            {eligibilityResult.eligible ? 'You are eligible for this scheme.' : 'You are not eligible for this scheme.'}
+                          </span>
+                          {!eligibilityResult.eligible && eligibilityResult.failures?.length > 0 && (
+                            <ul className="list-disc ml-6 text-white">
+                              {eligibilityResult.failures.map((f) => (
+                                <li key={f.key}>
+                                  {f.question}: {f.reason}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
+                ) : (
+                  <>
+                    {scheme.eligibility && (
+                      <p className="text-white text-lg">{scheme.eligibility}</p>
+                    )}
+                    <div className="alert">
+                      <div className="flex flex-col gap-2">
+                        <span className="text-white">Click the "Check Eligibility" button above to answer a few yes/no questions and instantly know your eligibility.</span>
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
             </div>

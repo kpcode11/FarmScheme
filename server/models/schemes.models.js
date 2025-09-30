@@ -37,6 +37,17 @@ const schemeScheme = new Schema(
     States: {
       type: String,
     },
+    eligibilityQuestions: [
+      new Schema(
+        {
+          key: { type: String, required: true },
+          question: { type: String, required: true },
+          expectedAnswer: { type: String, enum: ["yes", "no"], required: true },
+          failureMessage: { type: String },
+        },
+        { _id: false }
+      ),
+    ],
   },
   {
     timestamps: true,
