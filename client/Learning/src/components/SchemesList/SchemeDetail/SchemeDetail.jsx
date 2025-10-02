@@ -2,6 +2,44 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+const splitIntoDocuments = (documentsText) => {
+  if (!documentsText || typeof documentsText !== 'string') return [];
+  const normalized = documentsText
+    .replace(/\r\n/g, '\n')
+    .replace(/\n+/g, '\n')
+    .replace(/\u2022/g, ' ')
+    .replace(/\*/g, ' ')
+    .trim();
+
+  const parts = normalized
+    .split(/\n|\.|;|,/)
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0);
+
+  const seen = new Set();
+  const unique = [];
+  for (const p of parts) {
+    const key = p.toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      unique.push(p);
+    }
+  }
+  return unique;
+};
+
+const mapToDocObjects = (items) => {
+  return items.map((text) => {
+    const lower = text.toLowerCase();
+    const optional = lower.includes('optional') || lower.includes('if applicable');
+    return {
+      name: text,
+      required: !optional,
+      description: ''
+    };
+  });
+};
+
 const SchemeDetail = () => {
   const { schemeId } = useParams();
   const navigate = useNavigate();
@@ -497,50 +535,37 @@ const SchemeDetail = () => {
                 <div className="alert alert-warning">
                   <span>Please ensure all documents are valid and clearly readable</span>
                 </div>
-                
-                <div className="overflow-x-auto">
-                  <table className="table">
-                    <thead>
-                      <tr>
-                        <th className="text-white">Document</th>
-                        <th className="text-white">Required</th>
-                        <th className="text-white">Description</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td className="font-medium text-white">Aadhaar Card</td>
-                        <td><div className="badge badge-error">Required</div></td>
-                        <td className="text-sm opacity-70 text-white">Valid Aadhaar card for identity verification</td>
-                      </tr>
-                      <tr>
-                        <td className="font-medium text-white">Land Ownership Documents</td>
-                        <td><div className="badge badge-error">Required</div></td>
-                        <td className="text-sm opacity-70 text-white">Revenue records, patta, or land title documents</td>
-                      </tr>
-                      <tr>
-                        <td className="font-medium text-white">Bank Account Details</td>
-                        <td><div className="badge badge-error">Required</div></td>
-                        <td className="text-sm opacity-70 text-white">Bank passbook or statement for fund transfer</td>
-                      </tr>
-                      <tr>
-                        <td className="font-medium text-white">Income Certificate</td>
-                        <td><div className="badge badge-error">Required</div></td>
-                        <td className="text-sm opacity-70 text-white">Certificate showing annual income</td>
-                      </tr>
-                      <tr>
-                        <td className="font-medium text-white">Caste Certificate</td>
-                        <td><div className="badge badge-warning">Optional</div></td>
-                        <td className="text-sm opacity-70 text-white">If applicable for reserved category benefits</td>
-                      </tr>
-                      <tr>
-                        <td className="font-medium text-white">Passport Size Photos</td>
-                        <td><div className="badge badge-error">Required</div></td>
-                        <td className="text-sm opacity-70 text-white">Recent photographs as per specifications</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+                {(() => {
+                  const parsed = mapToDocObjects(splitIntoDocuments(scheme?.documents));
+                  return (
+                    <div className="overflow-x-auto">
+                      <table className="table">
+                        <thead>
+                          <tr>
+                            <th className="text-white">Document</th>
+                            <th className="text-white">Required</th>
+                            <th className="text-white">Description</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(parsed.length > 0 ? parsed : [
+                            { name: 'No documents information available for this scheme.', required: false, description: '' }
+                          ]).map((doc, idx) => (
+                            <tr key={idx}>
+                              <td className="font-medium text-white">{doc.name}</td>
+                              <td>
+                                <div className={`badge ${doc.required ? 'badge-error' : 'badge-warning'}`}>
+                                  {doc.required ? 'Required' : 'Optional'}
+                                </div>
+                              </td>
+                              <td className="text-sm opacity-70 text-white">{doc.description}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </div>

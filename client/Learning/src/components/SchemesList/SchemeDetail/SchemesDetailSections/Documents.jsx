@@ -1,14 +1,45 @@
 import React from 'react';
 
+const splitIntoDocuments = (documentsText) => {
+  if (!documentsText || typeof documentsText !== 'string') return [];
+  const normalized = documentsText
+    .replace(/\r\n/g, '\n')
+    .replace(/\n+/g, '\n')
+    .replace(/\u2022/g, ' ')
+    .replace(/\*/g, ' ')
+    .trim();
+
+  const parts = normalized
+    .split(/\n|\.|;|,/)
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0);
+
+  const seen = new Set();
+  const unique = [];
+  for (const p of parts) {
+    const key = p.toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      unique.push(p);
+    }
+  }
+  return unique;
+};
+
+const mapToDocObjects = (items) => {
+  return items.map((text) => {
+    const lower = text.toLowerCase();
+    const optional = lower.includes('optional') || lower.includes('if applicable');
+    return {
+      name: text,
+      required: !optional,
+      description: ''
+    };
+  });
+};
+
 const Documents = ({ scheme }) => {
-  const documents = [
-    { name: "Aadhaar Card", required: true, description: "Valid Aadhaar card for identity verification" },
-    { name: "Land Ownership Documents", required: true, description: "Revenue records, patta, or land title documents" },
-    { name: "Bank Account Details", required: true, description: "Bank passbook or statement for fund transfer" },
-    { name: "Income Certificate", required: true, description: "Certificate showing annual income" },
-    { name: "Caste Certificate", required: false, description: "If applicable for reserved category benefits" },
-    { name: "Passport Size Photos", required: true, description: "Recent photographs as per specifications" }
-  ];
+  const parsed = mapToDocObjects(splitIntoDocuments(scheme?.documents));
 
   return (
     <div className="space-y-6">
@@ -31,7 +62,9 @@ const Documents = ({ scheme }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {documents.map((doc, index) => (
+                  {(parsed.length > 0 ? parsed : [
+                    { name: 'No documents information available for this scheme.', required: false, description: '' }
+                  ]).map((doc, index) => (
                     <tr key={index}>
                       <td className="font-medium">{doc.name}</td>
                       <td>
