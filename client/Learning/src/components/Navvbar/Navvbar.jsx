@@ -46,7 +46,7 @@ function Navvbar() {
           <option value="or">ଓଡ଼ିଆ</option>
           <option value="as">অসমীয়া</option>
         </select>
-        <Button>Get started</Button>
+        {/* <Button>Get started</Button> */}
         <NavbarToggle />
       </div>
       <NavbarCollapse>

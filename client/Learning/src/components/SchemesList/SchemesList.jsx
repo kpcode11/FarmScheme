@@ -167,7 +167,7 @@ const SchemesList = () => {
 
           return (
             <div
-              className="card bg-slate-600 text-primary-content w-96"
+              className="card bg-slate-700 text-primary-content w-96"
               key={scheme._id}
             >
               <div className="card-body">
