@@ -544,7 +544,7 @@ const SchemeDetail = () => {
                           <tr>
                             <th className="text-white">Document</th>
                             <th className="text-white">Required</th>
-                            <th className="text-white">Description</th>
+                            {/* <th className="text-white">Description</th> */}
                           </tr>
                         </thead>
                         <tbody>
@@ -558,7 +558,7 @@ const SchemeDetail = () => {
                                   {doc.required ? 'Required' : 'Optional'}
                                 </div>
                               </td>
-                              <td className="text-sm opacity-70 text-white">{doc.description}</td>
+                              {/* <td className="text-sm opacity-70 text-white">{doc.description}</td> */}
                             </tr>
                           ))}
                         </tbody>

@@ -32,8 +32,7 @@ const mapToDocObjects = (items) => {
     const optional = lower.includes('optional') || lower.includes('if applicable');
     return {
       name: text,
-      required: !optional,
-      description: ''
+      required: !optional
     };
   });
 };
@@ -58,12 +57,11 @@ const Documents = ({ scheme }) => {
                   <tr>
                     <th>Document</th>
                     <th>Required</th>
-                    <th>Description</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(parsed.length > 0 ? parsed : [
-                    { name: 'No documents information available for this scheme.', required: false, description: '' }
+                    { name: 'No documents information available for this scheme.', required: false }
                   ]).map((doc, index) => (
                     <tr key={index}>
                       <td className="font-medium">{doc.name}</td>
@@ -72,7 +70,6 @@ const Documents = ({ scheme }) => {
                           {doc.required ? 'Required' : 'Optional'}
                         </div>
                       </td>
-                      <td className="text-sm opacity-70">{doc.description}</td>
                     </tr>
                   ))}
                 </tbody>
