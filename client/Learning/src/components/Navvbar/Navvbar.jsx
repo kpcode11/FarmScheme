@@ -24,6 +24,28 @@ function Navvbar() {
         </span>
       </NavbarBrand>
       <div className="flex md:order-2">
+        <select
+          className="select select-bordered select-sm mr-2"
+          onChange={(e) => {
+            const lang = e.target.value;
+            if (window.setLanguage) window.setLanguage(lang);
+          }}
+          defaultValue="en"
+        >
+          <option value="en">English</option>
+          <option value="hi">हिन्दी</option>
+          <option value="bn">বাংলা</option>
+          <option value="te">తెలుగు</option>
+          <option value="mr">मराठी</option>
+          <option value="ta">தமிழ்</option>
+          <option value="ur">اردو</option>
+          <option value="gu">ગુજરાતી</option>
+          <option value="kn">ಕನ್ನಡ</option>
+          <option value="ml">മലയാളം</option>
+          <option value="pa">ਪੰਜਾਬੀ</option>
+          <option value="or">ଓଡ଼ିଆ</option>
+          <option value="as">অসমীয়া</option>
+        </select>
         <Button>Get started</Button>
         <NavbarToggle />
       </div>

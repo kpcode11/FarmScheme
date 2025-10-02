@@ -6,9 +6,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Farmer Schemes</title>
     <link href="./src/index.css" rel="stylesheet">
+    <style>
+      .goog-logo-link { display: none !important; }
+      .goog-te-gadget { height: 0; overflow: hidden; }
+      .goog-te-banner-frame.skiptranslate { display: none !important; }
+      body { top: 0px !important; }
+    </style>
+    <script>
+      window.googleTranslateElementInit = function () {
+        /* Initialize Google Translate with Indian languages */
+        new window.google.translate.TranslateElement({
+          pageLanguage: 'en',
+          includedLanguages: 'en,hi,bn,te,mr,ta,ur,gu,kn,ml,pa,or,as',
+          autoDisplay: false
+        }, 'google_translate_element');
+      };
+
+      window.setLanguage = function (lang) {
+        try {
+          var combo = document.querySelector('select.goog-te-combo');
+          if (!combo) return;
+          combo.value = lang;
+          combo.dispatchEvent(new Event('change'));
+        } catch (e) {
+          console.error('Language switch failed', e);
+        }
+      };
+    </script>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
   </head>
   <body>
     <div id="root"></div>
+    <div id="google_translate_element" style="display:none;"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
