@@ -83,7 +83,7 @@ const Maps = () => {
         {places && places.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {places.map((p) => (
-              <div key={p.place_id} className="card bg-slate-600 border border-base-300 shadow mb-4">
+              <div key={p.place_id} className="card bg-slate-700 border border-base-300 shadow mb-4">
                 <div className="card-body">
                   <h4 className="card-title text-white text-lg leading-tight">{p.name}</h4>
                   {p.vicinity && <p className="text-sm text-white opacity-80">{p.vicinity}</p>}
