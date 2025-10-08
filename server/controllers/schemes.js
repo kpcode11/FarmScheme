@@ -3,32 +3,79 @@ import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { schemes as SchemeModel } from "../models/schemes.models.js";
 
-//Get all the schemes (included pagination)
+//Get all the schemes (with filtering, search, pagination, sorting)
 const getAllschemes = asyncHandler(async (req, res) => {
-  // Change from req.params to req.query
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
+  const page = Math.max(parseInt(req.query.page) || 1, 1);
+  const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 100);
   const skip = (page - 1) * limit;
 
-  // console.log("Pagination params:", { page, limit, skip }); // Debug log
+  const { level, schemeCategory, tags, q, sort } = req.query;
 
-  const totalschemes = await SchemeModel.countDocuments();
-  const allSchemes = await SchemeModel.find({}).skip(skip).limit(limit);
+  const filter = {};
 
-  if (!allSchemes.length) {
-    return res.status(200).json(
-      new ApiResponse(
-        200,
-        {
-          scheme: [],
-          CurrentPage: page,
-          TotalPages: Math.ceil(totalschemes / limit),
-          TotalSchemes: totalschemes,
-        },
-        "No schemes found"
-      )
-    );
+  if (level && level !== "all") {
+    filter.level = { $in: level.split(",").map((s) => s.trim()).filter(Boolean) };
   }
+
+  if (schemeCategory) {
+    const categories = schemeCategory
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (categories.length === 1) {
+      const esc = categories[0].replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      filter.schemeCategory = new RegExp(`^${esc}$`, "i");
+    } else if (categories.length > 1) {
+      const regs = categories.map((c) => {
+        const esc = c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        return new RegExp(`^${esc}$`, "i");
+      });
+      filter.schemeCategory = { $in: regs };
+    }
+  }
+
+  if (tags) {
+    const tagList = tags
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+    if (tagList.length) {
+      const regexes = tagList.map((t) => {
+        const esc = t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        return new RegExp(`^${esc}$`, "i");
+      });
+      filter.tags = { $all: regexes };
+    }
+  }
+
+  if (q && q.trim().length > 0) {
+    const safe = q.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(safe, "i");
+    filter.$or = [
+      { scheme_name: regex },
+      { details: regex },
+      { benefits: regex },
+      { eligibility: regex },
+      { documents: regex },
+      { schemeCategory: regex },
+      { level: regex },
+      // For arrays of strings, direct field: regex matches any element
+      { tags: regex },
+    ];
+  }
+
+  let sortSpec = { createdAt: -1 };
+  if (typeof sort === "string" && sort.length > 0) {
+    const [field, dirRaw] = sort.split(":");
+    const dir = (dirRaw || "desc").toLowerCase();
+    if (field) sortSpec = { [field]: dir === "asc" ? 1 : -1 };
+  }
+
+  const totalschemes = await SchemeModel.countDocuments(filter);
+  const allSchemes = await SchemeModel.find(filter)
+    .sort(sortSpec)
+    .skip(skip)
+    .limit(limit);
 
   return res.status(200).json(
     new ApiResponse(
@@ -37,9 +84,9 @@ const getAllschemes = asyncHandler(async (req, res) => {
         scheme: allSchemes,
         CurrentPage: page,
         TotalPages: Math.ceil(totalschemes / limit),
-        TotalSchemes: totalschemes, // Add total count
+        TotalSchemes: totalschemes,
       },
-      "Schemes Fetched Successfully"
+      allSchemes.length ? "Schemes Fetched Successfully" : "No schemes found"
     )
   );
 });

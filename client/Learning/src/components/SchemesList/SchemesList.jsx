@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import "./SchemesList.css"; // Make sure to create this CSS file
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 const SchemesList = () => {
   const [schemes, setSchemes] = useState([]);
@@ -14,6 +14,41 @@ const SchemesList = () => {
   const [totalSchemes, setTotalSchemes] = useState(0);
   const [limit, setLimit] = useState(10);
 
+  // URL search params syncing for filters/search
+  const [searchParams, setSearchParams] = useSearchParams();
+  // Applied filter state (drives fetching)
+  const [level, setLevel] = useState(searchParams.get("level") || "all");
+  const [schemeCategory, setSchemeCategory] = useState(searchParams.get("schemeCategory") || "");
+  const [tags, setTags] = useState(searchParams.get("tags") || "");
+  const [q, setQ] = useState(searchParams.get("q") || "");
+  const [sort, setSort] = useState(searchParams.get("sort") || "createdAt:desc");
+
+  // UI input state (does not trigger fetching until Apply)
+  const [uiLevel, setUiLevel] = useState(searchParams.get("level") || "all");
+  const [uiSchemeCategory, setUiSchemeCategory] = useState(searchParams.get("schemeCategory") || "");
+  const [uiTags, setUiTags] = useState(searchParams.get("tags") || "");
+  const [uiQ, setUiQ] = useState(searchParams.get("q") || "");
+  const [uiSort, setUiSort] = useState(searchParams.get("sort") || "createdAt:desc");
+
+  // Initialize page/limit from URL once on mount
+  useEffect(() => {
+    const pageParam = parseInt(searchParams.get("page") || "1", 10);
+    const limitParam = parseInt(searchParams.get("limit") || "10", 10);
+    if (!isNaN(pageParam)) setCurrentPage(pageParam);
+    if (!isNaN(limitParam)) setLimit(limitParam);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const queryObject = useMemo(() => {
+    const obj = { page: currentPage, limit };
+    if (level && level !== "all") obj.level = level;
+    if (schemeCategory) obj.schemeCategory = schemeCategory;
+    if (tags) obj.tags = tags;
+    if (q) obj.q = q;
+    if (sort) obj.sort = sort;
+    return obj;
+  }, [currentPage, limit, level, schemeCategory, tags, q, sort]);
+
   useEffect(() => {
     const fetchSchemes = async () => {
       try {
@@ -22,9 +57,9 @@ const SchemesList = () => {
         //   `Making request to: http://localhost:8001/api/v1/schemes?page=${currentPage}&limit=${limit}`
         // );
 
-        // Include pagination parameters in the request
+        const params = new URLSearchParams(queryObject).toString();
         const response = await axios.get(
-          `http://localhost:8001/api/v1/schemes?page=${currentPage}&limit=${limit}`
+          `http://localhost:8001/api/v1/schemes?${params}`
         );
 
         // Debug the response structure
@@ -62,7 +97,20 @@ const SchemesList = () => {
     };
 
     fetchSchemes();
-  }, [currentPage, limit]); // Re-fetch when page or limit changes
+  }, [queryObject]); // Re-fetch when any query param changes
+
+  // Reflect applied filters to URL
+  useEffect(() => {
+    const next = new URLSearchParams();
+    next.set("page", String(currentPage));
+    next.set("limit", String(limit));
+    if (level && level !== "all") next.set("level", level);
+    if (schemeCategory) next.set("schemeCategory", schemeCategory);
+    if (tags) next.set("tags", tags);
+    if (q) next.set("q", q);
+    if (sort) next.set("sort", sort);
+    setSearchParams(next, { replace: true });
+  }, [currentPage, limit, level, schemeCategory, tags, q, sort, setSearchParams]);
 
   // Handle page navigation
   const handlePageChange = (newPage) => {
@@ -76,6 +124,33 @@ const SchemesList = () => {
   const handleLimitChange = (e) => {
     setLimit(Number(e.target.value));
     setCurrentPage(1); // Reset to first page when changing limit
+  };
+
+  const handleLevelChange = (e) => {
+    setUiLevel(e.target.value);
+  };
+
+  const handleCategoryChange = (e) => {
+    setUiSchemeCategory(e.target.value);
+  };
+
+  const handleTagsChange = (e) => {
+    setUiTags(e.target.value);
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    // Apply UI values to actual filter state
+    setLevel(uiLevel);
+    setSchemeCategory(uiSchemeCategory);
+    setTags(uiTags);
+    setQ(uiQ);
+    setSort(uiSort);
+    setCurrentPage(1);
+  };
+
+  const handleSortChange = (e) => {
+    setUiSort(e.target.value);
   };
 
   // Generate page numbers for pagination
@@ -125,7 +200,139 @@ const SchemesList = () => {
 
   return (
     <div className="schemes-container">
-      <h1>Government Schemes</h1>
+      {/* <h1>Government Schemes</h1> */}
+
+      {/* Filters (compact card) */}
+      <div
+        className="filters text-slate-600"
+        style={{
+          maxWidth: "1100px",
+          margin: "0 auto 12px",
+          background: "#f8fafc",
+          border: "1px solid #e5e7eb",
+          borderRadius: "8px",
+          padding: "10px 12px",
+          boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
+        }}
+      >
+        <form onSubmit={handleSearchSubmit} className="filters-form">
+          <div
+            className="filter-row"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+              gap: "0.5rem",
+              alignItems: "center",
+            }}
+          >
+            <label className="label-text text-xs md:text-sm" style={{ gridColumn: "span 1 / span 1" }}>Level</label>
+            <select
+              value={uiLevel}
+              onChange={handleLevelChange}
+              disabled={loading}
+              className="select select-bordered text-sm bg-slate-300"
+              style={{ gridColumn: "span 1 / span 1", height: "32px" }}
+            >
+              <option value="all">All</option>
+              <option value="State">State</option>
+              <option value="Central">Central</option>
+            </select>
+
+            <label className="label-text text-xs md:text-sm" style={{ gridColumn: "span 1 / span 1" }}>Category</label>
+            <input
+              type="text"
+              value={uiSchemeCategory}
+              onChange={handleCategoryChange}
+              placeholder="e.g. Agriculture"
+              disabled={loading}
+              className="input input-bordered text-sm bg-slate-300"
+              style={{ gridColumn: "span 1 / span 1", height: "32px", padding: "0 8px" }}
+            />
+
+            <label className="label-text text-xs md:text-sm" style={{ gridColumn: "span 1 / span 1" }}>Tags</label>
+            <input
+              type="text"
+              value={uiTags}
+              onChange={handleTagsChange}
+              placeholder="comma,separated,tags"
+              disabled={loading}
+              className="input input-bordered text-sm bg-slate-300"
+              style={{ gridColumn: "span 1 / span 1", height: "32px", padding: "0 8px" }}
+            />
+
+            <label className="label-text text-xs md:text-sm" style={{ gridColumn: "span 1 / span 1" }}>Search</label>
+            <input
+              type="search"
+              value={uiQ}
+              onChange={(e) => setUiQ(e.target.value)}
+              placeholder="Search schemes"
+              disabled={loading}
+              className="input input-bordered text-sm bg-slate-300"
+              style={{ gridColumn: "span 1 / span 1", height: "32px", padding: "0 8px" }}
+            />
+
+            <label className="label-text text-xs md:text-sm" style={{ gridColumn: "span 1 / span 1" }}>Sort</label>
+            <select
+              value={uiSort}
+              onChange={handleSortChange}
+              disabled={loading}
+              className="select select-bordered text-sm bg-slate-300"
+              style={{ gridColumn: "span 1 / span 1", height: "32px" }}
+            >
+              <option value="createdAt:desc">Newest</option>
+              <option value="createdAt:asc">Oldest</option>
+              <option value="scheme_name:asc">Name A-Z</option>
+              <option value="scheme_name:desc">Name Z-A</option>
+            </select>
+          </div>
+
+          <div className="filter-actions" style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={loading}
+              style={{ height: "32px", padding: "0 10px", fontSize: "0.875rem" }}
+            >
+              Apply
+            </button>
+            <button
+              type="button"
+              className="btn"
+              disabled={loading}
+              style={{ height: "32px", padding: "0 10px", fontSize: "0.875rem" }}
+              onClick={() => {
+                setUiLevel("all");
+                setUiSchemeCategory("");
+                setUiTags("");
+                setUiQ("");
+                setUiSort("createdAt:desc");
+                // Apply immediately when clearing
+                setLevel("all");
+                setSchemeCategory("");
+                setTags("");
+                setQ("");
+                setSort("createdAt:desc");
+                setCurrentPage(1);
+              }}
+            >Clear</button>
+          </div>
+
+          {/* Helper text */}
+          <div className="text-xs mt-1 opacity-70" style={{ lineHeight: 1.2 }}>
+            Type category or tags fully, then click Apply. Tags are comma-separated.
+          </div>
+        </form>
+
+        {/* Active filters chips */}
+        {(level !== "all" || schemeCategory || tags || q) && (
+          <div className="mt-2 flex flex-wrap gap-2 text-xs">
+            {level !== "all" && <span className="badge badge-outline text-xs">Level: {level}</span>}
+            {schemeCategory && <span className="badge badge-outline text-xs">Category: {schemeCategory}</span>}
+            {tags && <span className="badge badge-outline text-xs">Tags: {tags}</span>}
+            {q && <span className="badge badge-outline text-xs">Search: {q}</span>}
+          </div>
+        )}
+      </div>
 
       {/* Pagination Controls at the top */}
       <div className="pagination-controls">
