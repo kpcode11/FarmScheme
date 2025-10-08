@@ -145,6 +145,12 @@ const SchemeDetail = () => {
     }
   };
 
+  // Function to handle opening eligibility modal
+  const handleCheckEligibility = () => {
+    setIsEligibilityOpen(true);
+    loadEligibilityQuestions();
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -215,7 +221,7 @@ const SchemeDetail = () => {
             </button>
             <button
               className="btn btn-accent"
-              onClick={() => { setIsEligibilityOpen(true); loadEligibilityQuestions(); }}
+              onClick={handleCheckEligibility}
               disabled={eligibilityLoading}
             >
               {eligibilityLoading ? 'Loading...' : 'Check Eligibility'}
@@ -326,7 +332,25 @@ const SchemeDetail = () => {
         <div ref={eligibilityRef} id="eligibility-section" className="scroll-mt-32">
           <div className="card bg-base-100 shadow-xl">
             <div className="card-body">
-              <h2 className="card-title text-2xl mb-4">Eligibility Criteria</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="card-title text-2xl">Eligibility Criteria</h2>
+                <button
+                  className="btn btn-accent btn-sm"
+                  onClick={handleCheckEligibility}
+                  disabled={eligibilityLoading}
+                >
+                  {eligibilityLoading ? (
+                    <>
+                      <span className="loading loading-spinner loading-xs"></span>
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      ✓ Check Eligibility
+                    </>
+                  )}
+                </button>
+              </div>
               <div className="space-y-4">
                 {(
                   <>
@@ -335,7 +359,12 @@ const SchemeDetail = () => {
                     )}
                     <div className="alert">
                       <div className="flex flex-col gap-2">
-                        <span className="text-white">Click the "Check Eligibility" button above to answer a few yes/no questions and instantly know your eligibility.</span>
+                        <span className="text-white">Click the "Check Eligibility" button to answer a few yes/no questions and instantly know your eligibility status.</span>
+                        {/* <div className="flex items-center gap-2 mt-2">
+                          <div className="badge badge-info badge-sm">Quick</div>
+                          <div className="badge badge-success badge-sm">Instant Result</div>
+                          <div className="badge badge-warning badge-sm">No Registration Required</div>
+                        </div> */}
                       </div>
                     </div>
                   </>
@@ -421,12 +450,12 @@ const SchemeDetail = () => {
         )}
 
         {/* Application Process Section */}
-        <div ref={applicationRef} id="eligibility-section" className="scroll-mt-32">
+        <div ref={applicationRef} id="application-section" className="scroll-mt-32">
           <div className="card bg-base-100 shadow-xl">
             <div className="card-body">
               <h2 className="card-title text-2xl mb-4">Application Process</h2>
               <div className="space-y-4">
-                {scheme.eligibility ? (
+                {scheme.application ? (
                   <p className="text-white text-lg">{scheme.application}</p>
                 ) : (
                   <div className="space-y-3">
@@ -461,70 +490,6 @@ const SchemeDetail = () => {
             </div>
           </div>
         </div>
-        {/* <div ref={applicationRef} id="application-section" className="scroll-mt-32">
-          <div className="card bg-base-100 shadow-xl">
-            <div className="card-body">
-              <h2 className="card-title text-2xl mb-4">Application Process</h2>
-              <div className="space-y-6">
-                <div className="steps steps-vertical lg:steps-horizontal">
-                  <div className="step step-primary">Check Eligibility</div>
-                  <div className="step step-primary">Gather Documents</div>
-                  <div className="step step-primary">Fill Application</div>
-                  <div className="step step-primary">Submit Application</div>
-                  <div className="step">Track Status</div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-8 h-8 bg-primary text-primary-content rounded-full flex items-center justify-center font-bold text-sm">1</div>
-                    <div>
-                      <h4 className="font-semibold text-lg text-white">Check Eligibility</h4>
-                      <p className="text-sm opacity-70 text-white">Verify that you meet all eligibility criteria before proceeding</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start space-x-4">
-                    <div className="w-8 h-8 bg-primary text-primary-content rounded-full flex items-center justify-center font-bold text-sm">2</div>
-                    <div>
-                      <h4 className="font-semibold text-lg text-white">Gather Documents</h4>
-                      <p className="text-sm opacity-70 text-white">Collect all required documents and certificates</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start space-x-4">
-                    <div className="w-8 h-8 bg-primary text-primary-content rounded-full flex items-center justify-center font-bold text-sm">3</div>
-                    <div>
-                      <h4 className="font-semibold text-lg text-white">Fill Application</h4>
-                      <p className="text-sm opacity-70 text-white">Complete the application form online or offline</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start space-x-4">
-                    <div className="w-8 h-8 bg-primary text-primary-content rounded-full flex items-center justify-center font-bold text-sm">4</div>
-                    <div>
-                      <h4 className="font-semibold text-lg text-white">Submit Application</h4>
-                      <p className="text-sm opacity-70 text-white">Submit your application with all required documents</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start space-x-4">
-                    <div className="w-8 h-8 bg-gray-400 text-gray-800 rounded-full flex items-center justify-center font-bold text-sm">5</div>
-                    <div>
-                      <h4 className="font-semibold text-lg text-white">Track Status</h4>
-                      <p className="text-sm opacity-70 text-white">Monitor your application status online</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex justify-center mt-6">
-                  <button className="btn btn-primary btn-lg">
-                    Start Application
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div> */}
 
         {/* Required Documents Section */}
         <div ref={documentsRef} id="documents-section" className="scroll-mt-32">
@@ -544,7 +509,6 @@ const SchemeDetail = () => {
                           <tr>
                             <th className="text-white">Document</th>
                             <th className="text-white">Required</th>
-                            {/* <th className="text-white">Description</th> */}
                           </tr>
                         </thead>
                         <tbody>
@@ -558,7 +522,6 @@ const SchemeDetail = () => {
                                   {doc.required ? 'Required' : 'Optional'}
                                 </div>
                               </td>
-                              {/* <td className="text-sm opacity-70 text-white">{doc.description}</td> */}
                             </tr>
                           ))}
                         </tbody>

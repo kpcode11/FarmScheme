@@ -61,7 +61,7 @@ function Navvbar() {
           Schemes
         </NavbarLink>
         <NavbarLink as={Link} to="/maps" active={location.pathname == "/maps"}>
-          Maps
+          Help-Centers
         </NavbarLink>
       </NavbarCollapse>
     </Navbar>
