@@ -262,13 +262,24 @@ const SchemeDetail = () => {
               <div className="space-y-4">
                 <p className="text-white text-lg">{scheme.details || 'No detailed description available.'}</p>
                 
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {scheme.schemeCategory && (
                     <div className="badge badge-primary badge-lg">{scheme.schemeCategory}</div>
                   )}
                   
                   {scheme.level && (
                     <div className="badge badge-secondary badge-lg">{scheme.level}</div>
+                  )}
+                  
+                  {/* Display tags as badges */}
+                  {scheme.tags && scheme.tags.length > 0 && (
+                    <>
+                      {scheme.tags.map((tag, index) => (
+                        <div key={index} className="badge badge-outline badge-accent">
+                          #{tag}
+                        </div>
+                      ))}
+                    </>
                   )}
                 </div>
                 
@@ -360,11 +371,6 @@ const SchemeDetail = () => {
                     <div className="alert">
                       <div className="flex flex-col gap-2">
                         <span className="text-white">Click the "Check Eligibility" button to answer a few yes/no questions and instantly know your eligibility status.</span>
-                        {/* <div className="flex items-center gap-2 mt-2">
-                          <div className="badge badge-info badge-sm">Quick</div>
-                          <div className="badge badge-success badge-sm">Instant Result</div>
-                          <div className="badge badge-warning badge-sm">No Registration Required</div>
-                        </div> */}
                       </div>
                     </div>
                   </>
