@@ -14,13 +14,13 @@ function Navvbar() {
   return (
     <Navbar fluid rounded>
       <NavbarBrand as={Link} to="/">
-        <img
+        {/* <img
           src="../public/Marvel_Logo.svg"
           className="mr-3 h-6 sm:h-9"
           alt="Logo"
-        />
+        /> */}
         <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
-          Farmer Schemes
+          Farmer Sahayak
         </span>
       </NavbarBrand>
       <div className="flex md:order-2">

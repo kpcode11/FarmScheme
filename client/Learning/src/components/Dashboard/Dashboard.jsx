@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import heroFarmers from './hero-farmers.jpg';
 
 const Dashboard = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const stats = [
-    { label: "Active Schemes", value: "500+", icon: "📊", color: "bg-blue-500" },
+    { label: "Active Schemes", value: "400+", icon: "📊", color: "bg-blue-500" },
     { label: "Farmers Helped", value: "10L+", icon: "👥", color: "bg-green-500" },
     { label: "States Covered", value: "28", icon: "🗺️", color: "bg-orange-500" },
     { label: "Success Rate", value: "95%", icon: "✅", color: "bg-purple-500" }
@@ -165,8 +166,8 @@ const Dashboard = () => {
             <div className="relative">
               <div className="relative z-10 bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
                 <img
-                  src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
-                  alt="Indian farmer in field"
+                  src={heroFarmers}
+                  alt="Indian farmers in field"
                   className="w-full h-80 object-cover rounded-lg"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent rounded-lg"></div>

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
-import "./SchemesList.css"; // Make sure to create this CSS file
 import { Link, useSearchParams } from "react-router-dom";
 
 const SchemesList = () => {
@@ -53,34 +52,20 @@ const SchemesList = () => {
     const fetchSchemes = async () => {
       try {
         setLoading(true);
-        // console.log(
-        //   `Making request to: http://localhost:8001/api/v1/schemes?page=${currentPage}&limit=${limit}`
-        // );
-
         const params = new URLSearchParams(queryObject).toString();
         const response = await axios.get(
           `http://localhost:8001/api/v1/schemes?${params}`
         );
 
-        // Debug the response structure
-        // console.log("Full response:", response);
-        // console.log("Response data:", response.data);
-        // console.log("Response data.data:", response.data.data);
-
         if (response.data && response.data.data && response.data.data.scheme) {
-          // console.log("Schemes array:", response.data.data.scheme);
           setSchemes(response.data.data.scheme);
-
-          // Set pagination info from response
           setTotalPages(response.data.data.TotalPages || 0);
           setCurrentPage(response.data.data.CurrentPage || 1);
-          // Calculate total schemes if not provided
           setTotalSchemes(
             response.data.data.TotalSchemes ||
               response.data.data.TotalPages * limit
           );
         } else {
-          console.log("No schemes found in expected structure");
           setSchemes([]);
           setTotalPages(0);
           setTotalSchemes(0);
@@ -88,8 +73,6 @@ const SchemesList = () => {
 
         setError(null);
       } catch (err) {
-        console.error("Full error object:", err);
-        console.error("Error response:", err.response);
         setError(`Failed to load schemes: ${err.message}`);
       } finally {
         setLoading(false);
@@ -97,7 +80,7 @@ const SchemesList = () => {
     };
 
     fetchSchemes();
-  }, [queryObject]); // Re-fetch when any query param changes
+  }, [queryObject]);
 
   // Reflect applied filters to URL
   useEffect(() => {
@@ -116,31 +99,18 @@ const SchemesList = () => {
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
-      window.scrollTo({ top: 0, left: 0, behavior: "smooth" }); // Scroll to top when page changes
+      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
     }
   };
 
   // Handle items per page change
   const handleLimitChange = (e) => {
     setLimit(Number(e.target.value));
-    setCurrentPage(1); // Reset to first page when changing limit
-  };
-
-  const handleLevelChange = (e) => {
-    setUiLevel(e.target.value);
-  };
-
-  const handleCategoryChange = (e) => {
-    setUiSchemeCategory(e.target.value);
-  };
-
-  const handleTagsChange = (e) => {
-    setUiTags(e.target.value);
+    setCurrentPage(1);
   };
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    // Apply UI values to actual filter state
     setLevel(uiLevel);
     setSchemeCategory(uiSchemeCategory);
     setTags(uiTags);
@@ -149,26 +119,19 @@ const SchemesList = () => {
     setCurrentPage(1);
   };
 
-  const handleSortChange = (e) => {
-    setUiSort(e.target.value);
-  };
-
   // Generate page numbers for pagination
   const getPageNumbers = () => {
     const pages = [];
     const maxPagesToShow = 5;
 
     if (totalPages <= maxPagesToShow) {
-      // If total pages is small, show all pages
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }
     } else {
-      // Show pages around current page
       let startPage = Math.max(1, currentPage - 2);
       let endPage = Math.min(totalPages, currentPage + 2);
 
-      // Adjust if we're near the beginning or end
       if (currentPage <= 3) {
         endPage = 5;
       }
@@ -184,373 +147,453 @@ const SchemesList = () => {
     return pages;
   };
 
-  // Debug what we're trying to render
-  // console.log("Current schemes state:", schemes);
-  // console.log("Pagination state:", {
-  //   currentPage,
-  //   totalPages,
-  //   totalSchemes,
-  //   limit,
-  // });
+  const getCategoryIcon = (category) => {
+    switch (category?.toLowerCase()) {
+      case 'agriculture': return '🌾';
+      case 'insurance': return '🛡️';
+      case 'education': return '📚';
+      case 'healthcare': return '🏥';
+      case 'housing': return '🏠';
+      case 'employment': return '💼';
+      default: return '📋';
+    }
+  };
 
-  if (loading) return <div className="loading">Loading schemes...</div>;
-  if (error) return <div className="error">{error}</div>;
-  if (schemes.length === 0 && !loading)
-    return <div className="empty">No schemes available.</div>;
+  const getCategoryColor = (category) => {
+    switch (category?.toLowerCase()) {
+      case 'agriculture': return 'from-green-500 to-emerald-600';
+      case 'insurance': return 'from-blue-500 to-blue-600';
+      case 'education': return 'from-purple-500 to-purple-600';
+      case 'healthcare': return 'from-red-500 to-pink-600';
+      case 'housing': return 'from-orange-500 to-yellow-500';
+      case 'employment': return 'from-indigo-500 to-indigo-600';
+      default: return 'from-gray-500 to-gray-600';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-gray-400 mx-auto mb-4"></div>
+          <p className="text-xl text-gray-300">Loading schemes...</p>
+          <p className="text-gray-500">Please wait while we fetch the latest schemes for you</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="bg-gray-800 rounded-lg shadow-xl p-8 max-w-md mx-4 text-center border border-gray-700">
+          <div className="text-red-400 text-6xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-100 mb-2">Oops! Something went wrong</h2>
+          <p className="text-gray-400 mb-6">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-gray-700 hover:bg-gray-600 text-gray-100 px-6 py-3 rounded-lg font-medium transition-colors duration-200 border border-gray-600"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="schemes-container">
-      {/* <h1>Government Schemes</h1> */}
+    <div className="min-h-screen bg-gray-900">
+      {/* Hero Header */}
+      <section className="relative bg-gradient-to-b from-gray-800 to-gray-900 text-white overflow-hidden">
+        {/* Subtle Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-20 left-20 w-48 h-48 bg-white rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-20 w-32 h-32 bg-gray-400 rounded-full blur-3xl"></div>
+        </div>
 
-      {/* Filters (compact card) */}
-      <div
-        className="filters text-slate-600"
-        style={{
-          maxWidth: "1100px",
-          margin: "0 auto 12px",
-          background: "#f8fafc",
-          border: "1px solid #e5e7eb",
-          borderRadius: "8px",
-          padding: "10px 12px",
-          boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
-        }}
-      >
-        <form onSubmit={handleSearchSubmit} className="filters-form">
-          <div
-            className="filter-row"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-              gap: "0.5rem",
-              alignItems: "center",
-            }}
-          >
-            <label className="label-text text-xs md:text-sm" style={{ gridColumn: "span 1 / span 1" }}>Level</label>
-            <select
-              value={uiLevel}
-              onChange={handleLevelChange}
-              disabled={loading}
-              className="select select-bordered text-sm bg-slate-300"
-              style={{ gridColumn: "span 1 / span 1", height: "32px" }}
-            >
-              <option value="all">All</option>
-              <option value="State">State</option>
-              <option value="Central">Central</option>
-            </select>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="text-center">
+            <div className="inline-flex items-center px-4 py-2 bg-gray-800/50 backdrop-blur-sm rounded-full text-gray-300 font-medium text-sm mb-6 border border-gray-700">
+              🇮🇳 Government Schemes Portal
+            </div>
+            
+            <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
+              <span className="block text-gray-100">Government Schemes</span>
+              <span className="block text-gray-400">for Every Farmer</span>
+            </h1>
+            
+            <p className="text-xl text-gray-300 leading-relaxed max-w-3xl mx-auto mb-8">
+              Discover hundreds of government schemes designed to support farmers across India. 
+              Find the right scheme for your needs with our advanced filtering system.
+            </p>
 
-            <label className="label-text text-xs md:text-sm" style={{ gridColumn: "span 1 / span 1" }}>Category</label>
-            <input
-              type="text"
-              value={uiSchemeCategory}
-              onChange={handleCategoryChange}
-              placeholder="e.g. Agriculture"
-              disabled={loading}
-              className="input input-bordered text-sm bg-slate-300"
-              style={{ gridColumn: "span 1 / span 1", height: "32px", padding: "0 8px" }}
-            />
-
-            <label className="label-text text-xs md:text-sm" style={{ gridColumn: "span 1 / span 1" }}>Tags</label>
-            <input
-              type="text"
-              value={uiTags}
-              onChange={handleTagsChange}
-              placeholder="comma,separated,tags"
-              disabled={loading}
-              className="input input-bordered text-sm bg-slate-300"
-              style={{ gridColumn: "span 1 / span 1", height: "32px", padding: "0 8px" }}
-            />
-
-            <label className="label-text text-xs md:text-sm" style={{ gridColumn: "span 1 / span 1" }}>Search</label>
-            <input
-              type="search"
-              value={uiQ}
-              onChange={(e) => setUiQ(e.target.value)}
-              placeholder="Search schemes"
-              disabled={loading}
-              className="input input-bordered text-sm bg-slate-300"
-              style={{ gridColumn: "span 1 / span 1", height: "32px", padding: "0 8px" }}
-            />
-
-            <label className="label-text text-xs md:text-sm" style={{ gridColumn: "span 1 / span 1" }}>Sort</label>
-            <select
-              value={uiSort}
-              onChange={handleSortChange}
-              disabled={loading}
-              className="select select-bordered text-sm bg-slate-300"
-              style={{ gridColumn: "span 1 / span 1", height: "32px" }}
-            >
-              <option value="createdAt:desc">Newest</option>
-              <option value="createdAt:asc">Oldest</option>
-              <option value="scheme_name:asc">Name A-Z</option>
-              <option value="scheme_name:desc">Name Z-A</option>
-            </select>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 text-center border border-gray-700">
+                <div className="text-2xl mb-1">📊</div>
+                <div className="text-2xl font-bold text-gray-100">{totalSchemes || '500+'}</div>
+                <div className="text-sm text-gray-400">Total Schemes</div>
+              </div>
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 text-center border border-gray-700">
+                <div className="text-2xl mb-1">🗺️</div>
+                <div className="text-2xl font-bold text-gray-100">28</div>
+                <div className="text-sm text-gray-400">States Covered</div>
+              </div>
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 text-center border border-gray-700">
+                <div className="text-2xl mb-1">📋</div>
+                <div className="text-2xl font-bold text-gray-100">10+</div>
+                <div className="text-sm text-gray-400">Categories</div>
+              </div>
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 text-center border border-gray-700">
+                <div className="text-2xl mb-1">✅</div>
+                <div className="text-2xl font-bold text-gray-100">95%</div>
+                <div className="text-sm text-gray-400">Success Rate</div>
+              </div>
+            </div>
           </div>
+        </div>
+      </section>
 
-          <div className="filter-actions" style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        
+        {/* Advanced Search & Filters */}
+        <div className="bg-gray-800 rounded-xl shadow-lg border border-gray-700 mb-8 overflow-hidden">
+          <div className="bg-gray-700 px-6 py-4 border-b border-gray-600">
+            <h2 className="text-xl font-semibold text-gray-100 flex items-center">
+              <span className="mr-2">🔍</span>
+              Find Your Perfect Scheme
+            </h2>
+          </div>
+          
+          <div className="p-6">
+            <form onSubmit={handleSearchSubmit} className="space-y-6">
+              {/* Search Bar */}
+              <div className="relative">
+                <input
+                  type="search"
+                  value={uiQ}
+                  onChange={(e) => setUiQ(e.target.value)}
+                  placeholder="Search schemes by name, description, or benefits..."
+                  className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-600 rounded-xl focus:border-gray-500 focus:outline-none transition-colors duration-200 bg-gray-700 text-gray-100 placeholder-gray-400"
+                />
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">
+                  🔍
+                </div>
+              </div>
+
+              {/* Filter Grid */}
+              <div className="grid md:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <span className="mr-1">🏛️</span>Level
+                  </label>
+                  <select
+                    value={uiLevel}
+                    onChange={(e) => setUiLevel(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-600 rounded-lg focus:border-gray-500 focus:outline-none bg-gray-700 text-gray-100"
+                  >
+                    <option value="all">All Levels</option>
+                    <option value="State">State Level</option>
+                    <option value="Central">Central Level</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <span className="mr-1">📂</span>Category
+                  </label>
+                  <input
+                    type="text"
+                    value={uiSchemeCategory}
+                    onChange={(e) => setUiSchemeCategory(e.target.value)}
+                    placeholder="e.g. Agriculture"
+                    className="w-full px-4 py-3 border border-gray-600 rounded-lg focus:border-gray-500 focus:outline-none bg-gray-700 text-gray-100 placeholder-gray-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <span className="mr-1">🏷️</span>Tags
+                  </label>
+                  <input
+                    type="text"
+                    value={uiTags}
+                    onChange={(e) => setUiTags(e.target.value)}
+                    placeholder="comma,separated,tags"
+                    className="w-full px-4 py-3 border border-gray-600 rounded-lg focus:border-gray-500 focus:outline-none bg-gray-700 text-gray-100 placeholder-gray-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <span className="mr-1">🔄</span>Sort By
+                  </label>
+                  <select
+                    value={uiSort}
+                    onChange={(e) => setUiSort(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-600 rounded-lg focus:border-gray-500 focus:outline-none bg-gray-700 text-gray-100"
+                  >
+                    <option value="createdAt:desc">Newest First</option>
+                    <option value="createdAt:asc">Oldest First</option>
+                    <option value="scheme_name:asc">Name A-Z</option>
+                    <option value="scheme_name:desc">Name Z-A</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  type="submit"
+                  className="flex-1 bg-gray-700 hover:bg-gray-600 text-gray-100 px-6 py-3 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 flex items-center justify-center border border-gray-600"
+                >
+                  <span className="mr-2">🔍</span>
+                  Search Schemes
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUiLevel("all");
+                    setUiSchemeCategory("");
+                    setUiTags("");
+                    setUiQ("");
+                    setUiSort("createdAt:desc");
+                    setLevel("all");
+                    setSchemeCategory("");
+                    setTags("");
+                    setQ("");
+                    setSort("createdAt:desc");
+                    setCurrentPage(1);
+                  }}
+                  className="px-6 py-3 border-2 border-gray-600 hover:border-gray-500 text-gray-300 rounded-lg font-medium transition-all duration-200 flex items-center justify-center bg-gray-800"
+                >
+                  <span className="mr-2">🗑️</span>
+                  Clear Filters
+                </button>
+              </div>
+
+              {/* Active Filters */}
+              {(level !== "all" || schemeCategory || tags || q) && (
+                <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
+                  <p className="text-sm font-medium text-gray-300 mb-2">Active Filters:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {level !== "all" && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-600 text-gray-200 border border-gray-500">
+                        Level: {level}
+                      </span>
+                    )}
+                    {schemeCategory && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-600 text-gray-200 border border-gray-500">
+                        Category: {schemeCategory}
+                      </span>
+                    )}
+                    {tags && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-600 text-gray-200 border border-gray-500">
+                        Tags: {tags}
+                      </span>
+                    )}
+                    {q && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-600 text-gray-200 border border-gray-500">
+                        Search: {q}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </form>
+          </div>
+        </div>
+
+        {/* Results Summary */}
+        <div className="bg-gray-800 rounded-lg shadow-md p-6 mb-8 border border-gray-700">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-100">
+                {totalSchemes > 0 ? (
+                  <>Found <span className="text-gray-300">{totalSchemes}</span> schemes matching your criteria</>
+                ) : (
+                  'No schemes found'
+                )}
+              </h3>
+              {totalSchemes > 0 && (
+                <p className="text-gray-400">
+                  Showing {schemes.length} schemes on page {currentPage} of {totalPages}
+                </p>
+              )}
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <label className="text-sm font-medium text-gray-300">Show:</label>
+              <select
+                value={limit}
+                onChange={handleLimitChange}
+                className="px-3 py-2 border border-gray-600 rounded-lg focus:border-gray-500 focus:outline-none bg-gray-700 text-gray-100"
+              >
+                <option value="5">5 per page</option>
+                <option value="10">10 per page</option>
+                <option value="20">20 per page</option>
+                <option value="50">50 per page</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Schemes Grid */}
+        {schemes.length === 0 && !loading ? (
+          <div className="bg-gray-800 rounded-xl shadow-lg p-12 text-center border border-gray-700">
+            <div className="text-6xl mb-4">🔍</div>
+            <h3 className="text-2xl font-bold text-gray-100 mb-2">No Schemes Found</h3>
+            <p className="text-gray-400 mb-6">
+              Try adjusting your search criteria or clear all filters to see more results.
+            </p>
             <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={loading}
-              style={{ height: "32px", padding: "0 10px", fontSize: "0.875rem" }}
-            >
-              Apply
-            </button>
-            <button
-              type="button"
-              className="btn"
-              disabled={loading}
-              style={{ height: "32px", padding: "0 10px", fontSize: "0.875rem" }}
               onClick={() => {
                 setUiLevel("all");
                 setUiSchemeCategory("");
                 setUiTags("");
                 setUiQ("");
-                setUiSort("createdAt:desc");
-                // Apply immediately when clearing
                 setLevel("all");
                 setSchemeCategory("");
                 setTags("");
                 setQ("");
-                setSort("createdAt:desc");
                 setCurrentPage(1);
               }}
-            >Clear</button>
-          </div>
-
-          {/* Helper text */}
-          <div className="text-xs mt-1 opacity-70" style={{ lineHeight: 1.2 }}>
-            Type category or tags fully, then click Apply. Tags are comma-separated.
-          </div>
-        </form>
-
-        {/* Active filters chips */}
-        {(level !== "all" || schemeCategory || tags || q) && (
-          <div className="mt-2 flex flex-wrap gap-2 text-xs">
-            {level !== "all" && <span className="badge badge-outline text-xs">Level: {level}</span>}
-            {schemeCategory && <span className="badge badge-outline text-xs">Category: {schemeCategory}</span>}
-            {tags && <span className="badge badge-outline text-xs">Tags: {tags}</span>}
-            {q && <span className="badge badge-outline text-xs">Search: {q}</span>}
-          </div>
-        )}
-      </div>
-
-      {/* Pagination Controls at the top */}
-      <div className="pagination-controls">
-        <div className="per-page">
-          <label htmlFor="limit-select" className="label-text text-slate-600">
-            Items per page:
-          </label>
-          <select
-            id="limit-select"
-            value={limit}
-            onChange={handleLimitChange}
-            disabled={loading}
-            className="label-text text-slate-600"
-          >
-            <option value="5">5</option>
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="50">50</option>
-          </select>
-        </div>
-
-        <div className="page-info">
-          {totalSchemes > 0 && (
-            <>
-              Showing <b>{schemes.length}</b> of <b>{totalSchemes}</b> schemes |
-              Page <b>{currentPage}</b> of <b>{totalPages}</b>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Schemes list */}
-      <div className="schemes-list">
-        {schemes.map((scheme) => {
-          // Debug each scheme object
-          // console.log("Rendering scheme:", scheme);
-
-          /**/
-
-          return (
-            <div
-              className="card bg-slate-700 text-primary-content w-96"
-              key={scheme._id}
+              className="bg-gray-700 hover:bg-gray-600 text-gray-100 px-6 py-3 rounded-lg font-medium transition-colors duration-200 border border-gray-600"
             >
-              <div className="card-body">
-                <h2 className="card-title font-medium text-2xl">
-                  {scheme.scheme_name || scheme.schemeName || "No Name"}
-                </h2>
-                <div className="scheme-details">
+              View All Schemes
+            </button>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            {schemes.map((scheme) => (
+              <div
+                key={scheme._id}
+                className="bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-700 overflow-hidden group"
+              >
+                {/* Card Header - Subtle accent */}
+                <div className="h-1 bg-gray-600"></div>
+                
+                <div className="p-6">
+                  {/* Category Badge */}
                   {scheme.schemeCategory && (
-                    <p>
-                      <b className="text-lg">Category:</b>{" "}
-                      {scheme.schemeCategory}
-                    </p>
+                    <div className="flex items-center mb-4">
+                      <span className="text-2xl mr-2">{getCategoryIcon(scheme.schemeCategory)}</span>
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-700 text-gray-300 border border-gray-600">
+                        {scheme.schemeCategory}
+                      </span>
+                      {scheme.level && (
+                        <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-600 text-gray-200 border border-gray-500">
+                          {scheme.level}
+                        </span>
+                      )}
+                    </div>
                   )}
-                  {scheme.level && (
-                    <p>
-                      <b className="text-lg">Level:</b> {scheme.level}
-                    </p>
-                  )}
+
+                  {/* Title */}
+                  <h3 className="text-xl font-bold text-gray-100 mb-3 group-hover:text-gray-200 transition-colors duration-200">
+                    {scheme.scheme_name || scheme.schemeName || "No Name"}
+                  </h3>
+
+                  {/* Description */}
                   {scheme.details && (
-                    <p>
-                      <b className="text-lg">Details:</b>{" "}
-                      {scheme.details.substring(0, 200)}
-                      ...
+                    <p className="text-gray-400 text-sm line-clamp-3 mb-4">
+                      {scheme.details.length > 150 
+                        ? `${scheme.details.substring(0, 150)}...`
+                        : scheme.details
+                      }
                     </p>
                   )}
-                </div>
-                {/* <p>
-                  A card component has a figure, a body part, and inside body
-                  there are title and actions parts
-                </p> */}
-                <div className="card-actions justify-end">
+
+                  {/* Tags */}
+                  {scheme.tags && scheme.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-4">
+                      {scheme.tags.slice(0, 3).map((tag, index) => (
+                        <span
+                          key={index}
+                          className="inline-block px-2 py-1 bg-gray-700 text-gray-300 text-xs rounded-full border border-gray-600"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                      {scheme.tags.length > 3 && (
+                        <span className="inline-block px-2 py-1 bg-gray-600 text-gray-400 text-xs rounded-full border border-gray-500">
+                          +{scheme.tags.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Action Button */}
                   <Link
                     to={`/schemes/${scheme._id}`}
-                    className="btn btn-primary"
+                    className="inline-flex items-center justify-center w-full bg-gray-700 hover:bg-gray-600 text-gray-100 px-6 py-3 rounded-lg font-medium transition-all duration-200 transform group-hover:scale-105 border border-gray-600"
                   >
-                    View Details
+                    <span className="mr-2">📄</span>
+                    View Full Details
+                    <span className="ml-2 group-hover:translate-x-1 transition-transform duration-200">→</span>
                   </Link>
                 </div>
               </div>
-            </div>
-            // <div className="scheme-card" key={scheme._id}>
-            //   <h2>{scheme.scheme_name || scheme.schemeName || "No Name"}</h2>
-            // <div className="scheme-details">
-            //   {scheme.schemeCategory && (
-            //     <p>
-            //       <strong>Category:</strong> {scheme.schemeCategory}
-            //     </p>
-            //   )}
-            //   {scheme.level && (
-            //     <p>
-            //       <strong>Level:</strong> {scheme.level}
-            //     </p>
-            //   )}
-            //   {scheme.details && (
-            //     <p>
-            //       <strong>Details:</strong> {scheme.details.substring(0, 200)}
-            //       ...
-            //     </p>
-            //   )}
-            // </div>
-            //   {/* Temporarily show all data for debugging */}
-            //   {/* <details>
-            //     <summary>View all fields (Debug)</summary>
-            //     <pre>{JSON.stringify(scheme, null, 2)}</pre>
-            //   </details> */}
-            // </div>
-          );
-        })}
-      </div>
+            ))}
+          </div>
+        )}
 
-      {/* Pagination Navigation */}
-      {totalPages > 1 && (
-        <div className="pagination text-slate-600">
-          {/* First and Previous buttons */}
-          <button
-            onClick={() => handlePageChange(1)}
-            disabled={currentPage === 1 || loading}
-            className="pagination-button"
-            title="First Page"
-          >
-            &laquo; First
-          </button>
-
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1 || loading}
-            className="pagination-button"
-            title="Previous Page"
-          >
-            &lsaquo; Prev
-          </button>
-
-          {/* Page numbers */}
-          <div className="page-numbers">
-            {currentPage > 3 && totalPages > 5 && (
-              <>
-                <button
-                  onClick={() => handlePageChange(1)}
-                  className="pagination-button"
-                >
-                  1
-                </button>
-                <span className="ellipsis">...</span>
-              </>
-            )}
-
-            {getPageNumbers().map((pageNum) => (
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="bg-gray-800 rounded-lg shadow-md p-6 border border-gray-700">
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+              {/* Previous Button */}
               <button
-                key={pageNum}
-                onClick={() => handlePageChange(pageNum)}
-                disabled={loading}
-                className={`pagination-button ${
-                  currentPage === pageNum ? "active" : ""
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 border ${
+                  currentPage === 1
+                    ? 'bg-gray-700 text-gray-500 cursor-not-allowed border-gray-600'
+                    : 'bg-gray-700 hover:bg-gray-600 text-gray-100 transform hover:scale-105 border-gray-600'
                 }`}
               >
-                {pageNum}
+                ← Previous
               </button>
-            ))}
 
-            {currentPage < totalPages - 2 && totalPages > 5 && (
-              <>
-                <span className="ellipsis">...</span>
-                <button
-                  onClick={() => handlePageChange(totalPages)}
-                  className="pagination-button"
-                >
-                  {totalPages}
-                </button>
-              </>
-            )}
+              {/* Page Numbers */}
+              <div className="flex items-center gap-2">
+                {getPageNumbers().map((pageNum) => (
+                  <button
+                    key={pageNum}
+                    onClick={() => handlePageChange(pageNum)}
+                    className={`w-10 h-10 rounded-lg font-medium transition-all duration-200 border ${
+                      currentPage === pageNum
+                        ? 'bg-gray-600 text-gray-100 shadow-lg transform scale-110 border-gray-500'
+                        : 'bg-gray-700 hover:bg-gray-600 text-gray-300 border-gray-600'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                ))}
+              </div>
+
+              {/* Next Button */}
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 border ${
+                  currentPage === totalPages
+                    ? 'bg-gray-700 text-gray-500 cursor-not-allowed border-gray-600'
+                    : 'bg-gray-700 hover:bg-gray-600 text-gray-100 transform hover:scale-105 border-gray-600'
+                }`}
+              >
+                Next →
+              </button>
+            </div>
+
+            {/* Page Info */}
+            <div className="text-center mt-4 text-gray-400">
+              Page {currentPage} of {totalPages} • Total {totalSchemes} schemes
+            </div>
           </div>
-
-          {/* Next and Last buttons */}
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages || loading}
-            className="pagination-button"
-            title="Next Page"
-          >
-            Next &rsaquo;
-          </button>
-
-          <button
-            onClick={() => handlePageChange(totalPages)}
-            disabled={currentPage === totalPages || loading}
-            className="pagination-button"
-            title="Last Page"
-          >
-            Last &raquo;
-          </button>
-        </div>
-      )}
-
-      {/* Page jump input */}
-      {totalPages > 10 && (
-        <div className="page-jump">
-          <label>
-            Go to page:
-            <input
-              type="number"
-              min="1"
-              max={totalPages}
-              onKeyPress={(e) => {
-                if (e.key === "Enter") {
-                  const page = parseInt(e.target.value);
-                  if (page >= 1 && page <= totalPages) {
-                    handlePageChange(page);
-                    e.target.value = "";
-                  }
-                }
-              }}
-              placeholder={`1-${totalPages}`}
-            />
-          </label>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
