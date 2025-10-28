@@ -145,10 +145,9 @@ const SchemeDetail = () => {
     }
   };
 
-  // Function to handle opening eligibility modal
+  // Navigate to dedicated eligibility page
   const handleCheckEligibility = () => {
-    setIsEligibilityOpen(true);
-    loadEligibilityQuestions();
+    navigate(`/schemes/${schemeId}/eligibility`);
   };
 
   if (loading) {
@@ -380,80 +379,7 @@ const SchemeDetail = () => {
           </div>
         </div>
 
-        {/* Eligibility Modal */}
-        {isEligibilityOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-            <div className="bg-base-100 rounded-lg shadow-xl w-full max-w-xl">
-              <div className="p-4 border-b border-base-200 flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-white">Check Eligibility</h3>
-                <button className="btn btn-sm" onClick={() => { setIsEligibilityOpen(false); }}>
-                  ✕
-                </button>
-              </div>
-              <div className="p-4 space-y-4 max-h-[70vh] overflow-y-auto">
-                {eligibilityQuestions.length === 0 && (
-                  <div className="alert">
-                    <span className="text-white">No eligibility questions configured for this scheme.</span>
-                  </div>
-                )}
-                {eligibilityQuestions.map((q) => (
-                  <div key={q.key} className="flex flex-col gap-2 p-3 rounded border border-base-200">
-                    <label className="text-white font-medium">{q.question}</label>
-                    <div className="flex gap-4">
-                      <label className="flex items-center gap-2 text-white">
-                        <input
-                          type="radio"
-                          name={q.key}
-                          className="radio radio-primary"
-                          checked={answers[q.key] === 'yes'}
-                          onChange={() => setAnswers({ ...answers, [q.key]: 'yes' })}
-                        />
-                        Yes
-                      </label>
-                      <label className="flex items-center gap-2 text-white">
-                        <input
-                          type="radio"
-                          name={q.key}
-                          className="radio radio-primary"
-                          checked={answers[q.key] === 'no'}
-                          onChange={() => setAnswers({ ...answers, [q.key]: 'no' })}
-                        />
-                        No
-                      </label>
-                    </div>
-                  </div>
-                ))}
-
-                {eligibilityResult && (
-                  <div className={`alert ${eligibilityResult.eligible ? 'alert-success' : 'alert-error'}`}>
-                    <div className="flex flex-col gap-2">
-                      <span className="text-white font-semibold">
-                        {eligibilityResult.eligible ? 'You are eligible for this scheme.' : 'You are not eligible for this scheme.'}
-                      </span>
-                      {!eligibilityResult.eligible && eligibilityResult.failures?.length > 0 && (
-                        <ul className="list-disc ml-6 text-white">
-                          {eligibilityResult.failures.map((f) => (
-                            <li key={f.key}>
-                              {f.question}: {f.reason}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-              <div className="p-4 border-t border-base-200 flex justify-end gap-2">
-                <button className="btn" onClick={() => { setIsEligibilityOpen(false); }}>
-                  Close
-                </button>
-                <button className="btn btn-primary" onClick={submitEligibility} disabled={eligibilityLoading || eligibilityQuestions.length === 0}>
-                  {eligibilityLoading ? 'Checking...' : 'Submit'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Eligibility modal replaced by dedicated page */}
 
         {/* Application Process Section */}
         <div ref={applicationRef} id="application-section" className="scroll-mt-32">

@@ -16,6 +16,7 @@ import Layout from "./Layout.jsx";
 import Maps from "./components/Maps/Maps.jsx";
 import Dashboard from "./components/Dashboard/Dashboard.jsx";
 import SchemeDetail from "./components/SchemesList/SchemeDetail/SchemeDetail.jsx";
+import Eligibility from "./components/SchemesList/SchemeDetail/Eligibility.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -23,6 +24,7 @@ const router = createBrowserRouter(
       <Route path="" element={<Dashboard />} />
       <Route path="schemes" element={<SchemesList />} />
       <Route path="schemes/:schemeId" element={<SchemeDetail />} />
+      <Route path="schemes/:schemeId/eligibility" element={<Eligibility />} />
       <Route path="maps" element={<Maps />} />
       <Route
         path="*"
