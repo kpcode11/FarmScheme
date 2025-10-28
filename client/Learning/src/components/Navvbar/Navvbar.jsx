@@ -52,6 +52,7 @@ function Navvbar() {
         {user ? (
           <>
             <span className="text-sm mr-2">Hi, {user.name}</span>
+            <Button as={RouterLink} to="/profile" size="sm">Profile</Button>
             <button className="btn btn-sm" onClick={logout}>Logout</button>
           </>
         ) : (

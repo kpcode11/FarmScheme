@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth.jsx";
+import { useToast } from "../../context/ToastContext.jsx";
 
 function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { pushToast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -20,6 +22,7 @@ function Login() {
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Enter a valid email");
       if (!password || password.length < 6) throw new Error("Password must be at least 6 characters");
       await login(email, password, remember);
+      pushToast({ type: "success", message: "Logged in successfully" });
       navigate("/");
     } catch (err) {
       setError(err.message || "Login failed");

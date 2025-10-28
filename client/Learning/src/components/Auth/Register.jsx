@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth.jsx";
+import { useToast } from "../../context/ToastContext.jsx";
 
 function Register() {
   const { register: doRegister } = useAuth();
   const navigate = useNavigate();
+  const { pushToast } = useToast();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,6 +26,7 @@ function Register() {
       if (!password || password.length < 6) throw new Error("Password must be at least 6 characters");
       if (password !== confirmPassword) throw new Error("Passwords do not match");
       await doRegister(name, email, password, remember);
+      pushToast({ type: "success", message: "Registered successfully" });
       navigate("/");
     } catch (err) {
       setError(err.message || "Registration failed");

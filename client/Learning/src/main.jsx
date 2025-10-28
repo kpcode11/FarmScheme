@@ -20,6 +20,9 @@ import Eligibility from "./components/SchemesList/SchemeDetail/Eligibility.jsx";
 import Login from "./components/Auth/Login.jsx";
 import Register from "./components/Auth/Register.jsx";
 import AuthProvider from "./context/AuthContext.jsx";
+import RequireAuth from "./components/Auth/RequireAuth.jsx";
+import Profile from "./components/Profile/Profile.jsx";
+import { ToastProvider } from "./context/ToastContext.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -31,6 +34,14 @@ const router = createBrowserRouter(
       <Route path="login" element={<Login />} />
       <Route path="register" element={<Register />} />
       <Route path="maps" element={<Maps />} />
+      <Route
+        path="profile"
+        element={
+          <RequireAuth>
+            <Profile />
+          </RequireAuth>
+        }
+      />
       <Route
         path="*"
         element={
@@ -54,7 +65,9 @@ const router = createBrowserRouter(
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <AuthProvider>
-      <RouterProvider router={router} />
+      <ToastProvider>
+        <RouterProvider router={router} />
+      </ToastProvider>
     </AuthProvider>
   </StrictMode>
 );
