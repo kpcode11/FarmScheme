@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../../config/api.js";
 import { Link, useSearchParams } from "react-router-dom";
 
 const SchemesList = () => {
@@ -53,9 +54,7 @@ const SchemesList = () => {
       try {
         setLoading(true);
         const params = new URLSearchParams(queryObject).toString();
-        const response = await axios.get(
-          `http://localhost:8001/api/v1/schemes?${params}`
-        );
+        const response = await axios.get(`${API_BASE_URL}/schemes?${params}`);
 
         if (response.data && response.data.data && response.data.data.scheme) {
           setSchemes(response.data.data.scheme);

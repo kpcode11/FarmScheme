@@ -17,6 +17,9 @@ import Maps from "./components/Maps/Maps.jsx";
 import Dashboard from "./components/Dashboard/Dashboard.jsx";
 import SchemeDetail from "./components/SchemesList/SchemeDetail/SchemeDetail.jsx";
 import Eligibility from "./components/SchemesList/SchemeDetail/Eligibility.jsx";
+import Login from "./components/Auth/Login.jsx";
+import Register from "./components/Auth/Register.jsx";
+import AuthProvider from "./context/AuthContext.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -25,6 +28,8 @@ const router = createBrowserRouter(
       <Route path="schemes" element={<SchemesList />} />
       <Route path="schemes/:schemeId" element={<SchemeDetail />} />
       <Route path="schemes/:schemeId/eligibility" element={<Eligibility />} />
+      <Route path="login" element={<Login />} />
+      <Route path="register" element={<Register />} />
       <Route path="maps" element={<Maps />} />
       <Route
         path="*"
@@ -48,6 +53,8 @@ const router = createBrowserRouter(
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </StrictMode>
 );

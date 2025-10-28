@@ -8,9 +8,12 @@ import {
   NavbarLink,
   NavbarToggle,
 } from "flowbite-react";
+import { useAuth } from "../../hooks/useAuth.jsx";
+import { Link as RouterLink } from "react-router-dom";
 
 function Navvbar() {
   const location = useLocation();
+  const { user, logout } = useAuth();
   return (
     <Navbar fluid rounded>
       <NavbarBrand as={Link} to="/">
@@ -23,7 +26,7 @@ function Navvbar() {
           Farmer Sahayak
         </span>
       </NavbarBrand>
-      <div className="flex md:order-2">
+      <div className="flex md:order-2 items-center gap-2">
         <select
           className="select select-bordered select-sm mr-2"
           onChange={(e) => {
@@ -46,7 +49,16 @@ function Navvbar() {
           <option value="or">ଓଡ଼ିଆ</option>
           <option value="as">অসমীয়া</option>
         </select>
-        {/* <Button>Get started</Button> */}
+        {user ? (
+          <>
+            <span className="text-sm mr-2">Hi, {user.name}</span>
+            <button className="btn btn-sm" onClick={logout}>Logout</button>
+          </>
+        ) : (
+          <>
+            <Button as={RouterLink} to="/login" size="sm">Login</Button>
+          </>
+        )}
         <NavbarToggle />
       </div>
       <NavbarCollapse>
