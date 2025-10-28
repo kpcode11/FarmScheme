@@ -23,6 +23,7 @@ import AuthProvider from "./context/AuthContext.jsx";
 import RequireAuth from "./components/Auth/RequireAuth.jsx";
 import Profile from "./components/Profile/Profile.jsx";
 import { ToastProvider } from "./context/ToastContext.jsx";
+import ForgotPassword from "./components/Auth/ForgotPassword.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -33,6 +34,7 @@ const router = createBrowserRouter(
       <Route path="schemes/:schemeId/eligibility" element={<Eligibility />} />
       <Route path="login" element={<Login />} />
       <Route path="register" element={<Register />} />
+      <Route path="forgot-password" element={<ForgotPassword />} />
       <Route path="maps" element={<Maps />} />
       <Route
         path="profile"

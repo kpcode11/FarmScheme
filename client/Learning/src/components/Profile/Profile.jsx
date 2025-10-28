@@ -24,6 +24,9 @@ function Profile() {
   const [errors, setErrors] = useState({});
   const [loadingRemote, setLoadingRemote] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [docs, setDocs] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [docType, setDocType] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -52,6 +55,7 @@ function Profile() {
         if (!cancelled) {
           setForm(next);
           setInitial(next);
+          setDocs(Array.isArray(u.documents) ? u.documents : []);
         }
       } catch (e) {
         if (!cancelled) {
@@ -154,6 +158,73 @@ function Profile() {
           <button type="button" className="btn" disabled={!isDirty || submitting} onClick={() => setForm(initial)}>Reset</button>
         </div>
       </form>
+
+      <div className="divider my-8">Documents</div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+        <div>
+          <label className="block text-sm mb-1">Document Type</label>
+          <input className="input input-bordered w-full" placeholder="e.g., Aadhar, Pan, Income Certificate" value={docType} onChange={(e) => setDocType(e.target.value)} />
+        </div>
+        <div>
+          <label className="block text-sm mb-1">Upload File (PDF/JPG/PNG)</label>
+          <input type="file" accept=".pdf,image/*" className="file-input file-input-bordered w-full" onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const fd = new FormData();
+            fd.append("file", file);
+            if (docType) fd.append("type", docType);
+            setUploading(true);
+            try {
+              const token = (localStorage.getItem("auth_token") || sessionStorage.getItem("auth_token")) || "";
+              const base = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8001/api/v1").replace(/\/$/, "");
+              const res = await fetch(`${base}/users/me/documents`, {
+                method: "POST",
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+                body: fd,
+              });
+              const data = await res.json();
+              if (!res.ok) throw new Error(data?.message || "Upload failed");
+              setDocs((d) => [...d, data.data]);
+              setDocType("");
+              e.target.value = "";
+              pushToast({ type: "success", message: "Document uploaded" });
+            } catch (err) {
+              pushToast({ type: "error", message: err.message || "Upload failed" });
+            } finally {
+              setUploading(false);
+            }
+          }} />
+        </div>
+      </div>
+
+      <div className="mt-6">
+        {docs.length === 0 ? (
+          <p className="text-sm opacity-70">No documents uploaded yet.</p>
+        ) : (
+          <ul className="space-y-2">
+            {docs.map((d) => (
+              <li key={d._id || d.url} className="flex items-center justify-between p-3 border rounded">
+                <div>
+                  <div className="font-medium">{d.type || "Document"}</div>
+                  {(() => {
+                    const href = d.url;
+                    return <a className="link" href={href} target="_blank" rel="noreferrer">View</a>;
+                  })()}
+                </div>
+                <button className="btn btn-sm" onClick={async () => {
+                  try {
+                    await apiRequest(`/users/me/documents/${d._id}`, { method: "DELETE" });
+                    setDocs((x) => x.filter((x1) => (x1._id || x1.url) !== (d._id || d.url)));
+                    pushToast({ type: "success", message: "Deleted" });
+                  } catch (e) {
+                    pushToast({ type: "error", message: e.message || "Delete failed" });
+                  }
+                }}>Delete</button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }

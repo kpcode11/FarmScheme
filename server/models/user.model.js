@@ -6,7 +6,7 @@ const documentSchema = new Schema(
     url: { type: String, required: true },
     verified: { type: Boolean, default: false },
   },
-  { _id: false }
+  { _id: true }
 );
 
 const userSchema = new Schema(
@@ -28,6 +28,8 @@ const userSchema = new Schema(
     },
     documents: [documentSchema],
     savedSchemes: [{ type: Schema.Types.ObjectId, ref: "schemes" }],
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
   },
   { timestamps: true }
 );
