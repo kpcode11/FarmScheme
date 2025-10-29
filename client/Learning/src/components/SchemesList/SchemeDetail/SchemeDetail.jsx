@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { apiRequest, getAuthToken } from '../../../config/api.js';
 
 const splitIntoDocuments = (documentsText) => {
   if (!documentsText || typeof documentsText !== 'string') return [];
@@ -52,6 +53,9 @@ const SchemeDetail = () => {
   const [eligibilityLoading, setEligibilityLoading] = useState(false);
   const [eligibilityResult, setEligibilityResult] = useState(null);
   const [isEligibilityOpen, setIsEligibilityOpen] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [userDocs, setUserDocs] = useState([]);
 
   // Refs for scrolling to sections
   const overviewRef = useRef(null);
@@ -86,6 +90,24 @@ const SchemeDetail = () => {
     if (schemeId) {
       fetchSchemeDetail();
     }
+  }, [schemeId]);
+
+  // Load user info for docs and saved state
+  useEffect(() => {
+    const token = getAuthToken();
+    if (!token) return;
+    (async () => {
+      try {
+        const me = await apiRequest('/users/me');
+        setUserDocs(Array.isArray(me.data?.documents) ? me.data.documents : []);
+        // check saved schemes
+        const saved = await apiRequest('/users/me/saved-schemes');
+        const arr = Array.isArray(saved.data) ? saved.data : [];
+        setIsSaved(arr.some((s) => (s?._id || s?.id) === schemeId));
+      } catch (e) {
+        // ignore if unauthenticated
+      }
+    })();
   }, [schemeId]);
 
   // Handle tab click and scroll to section
@@ -217,6 +239,33 @@ const SchemeDetail = () => {
           <div className="flex gap-2">
             <button className="btn btn-primary">
               Apply Now
+            </button>
+            <button
+              className={`btn ${isSaved ? 'btn-secondary' : 'btn-outline'}`}
+              disabled={saving}
+              onClick={async () => {
+                const token = getAuthToken();
+                if (!token) {
+                  navigate('/login');
+                  return;
+                }
+                setSaving(true);
+                try {
+                  if (isSaved) {
+                    await apiRequest(`/users/me/saved-schemes/${schemeId}`, { method: 'DELETE' });
+                    setIsSaved(false);
+                  } else {
+                    await apiRequest(`/users/me/saved-schemes/${schemeId}`, { method: 'POST' });
+                    setIsSaved(true);
+                  }
+                } catch (e) {
+                  console.error('Save toggle failed', e);
+                } finally {
+                  setSaving(false);
+                }
+              }}
+            >
+              {isSaved ? 'Saved' : 'Save'}
             </button>
             <button
               className="btn btn-accent"
@@ -434,6 +483,12 @@ const SchemeDetail = () => {
                 </div>
                 {(() => {
                   const parsed = mapToDocObjects(splitIntoDocuments(scheme?.documents));
+                  const normalize = (s) => (s || '').toLowerCase();
+                  const uploadedTypes = (userDocs || []).map((d) => normalize(d.type));
+                  const isUploadedMatch = (docName) => {
+                    const n = normalize(docName);
+                    return uploadedTypes.some((t) => n.includes(t) || t.includes(n));
+                  };
                   return (
                     <div className="overflow-x-auto">
                       <table className="table">
@@ -441,6 +496,7 @@ const SchemeDetail = () => {
                           <tr>
                             <th className="text-white">Document</th>
                             <th className="text-white">Required</th>
+                            <th className="text-white">Uploaded</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -453,6 +509,13 @@ const SchemeDetail = () => {
                                 <div className={`badge ${doc.required ? 'badge-error' : 'badge-warning'}`}>
                                   {doc.required ? 'Required' : 'Optional'}
                                 </div>
+                              </td>
+                              <td>
+                                {isUploadedMatch(doc.name) ? (
+                                  <div className="badge badge-success">Yes</div>
+                                ) : (
+                                  <div className="badge">No</div>
+                                )}
                               </td>
                             </tr>
                           ))}

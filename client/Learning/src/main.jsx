@@ -12,6 +12,7 @@ import {
   createRoutesFromElements,
 } from "react-router-dom";
 import SchemesList from "./components/SchemesList/SchemesList.jsx";
+import SavedSchemes from "./components/SchemesList/SavedSchemes.jsx";
 import Layout from "./Layout.jsx";
 import Maps from "./components/Maps/Maps.jsx";
 import Dashboard from "./components/Dashboard/Dashboard.jsx";
@@ -36,6 +37,14 @@ const router = createBrowserRouter(
       <Route path="register" element={<Register />} />
       <Route path="reset-password" element={<ResetPassword />} />
       <Route path="maps" element={<Maps />} />
+      <Route
+        path="saved-schemes"
+        element={
+          <RequireAuth>
+            <SavedSchemes />
+          </RequireAuth>
+        }
+      />
       <Route
         path="profile"
         element={

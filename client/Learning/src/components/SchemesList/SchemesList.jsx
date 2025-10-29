@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../../config/api.js";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { apiRequest, getAuthToken } from "../../config/api.js";
 
 const SchemesList = () => {
+  const navigate = useNavigate();
   const [schemes, setSchemes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [savedSchemes, setSavedSchemes] = useState(new Set());
+  const [savingStates, setSavingStates] = useState({});
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -37,6 +41,25 @@ const SchemesList = () => {
     if (!isNaN(pageParam)) setCurrentPage(pageParam);
     if (!isNaN(limitParam)) setLimit(limitParam);
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Load saved schemes for logged-in users
+  useEffect(() => {
+    const loadSavedSchemes = async () => {
+      const token = getAuthToken();
+      if (!token) return;
+      
+      try {
+        const response = await apiRequest('/users/me/saved-schemes');
+        const saved = response.data || [];
+        const savedIds = new Set(saved.map(s => s._id || s.id));
+        setSavedSchemes(savedIds);
+      } catch (error) {
+        console.error('Failed to load saved schemes:', error);
+      }
+    };
+
+    loadSavedSchemes();
   }, []);
 
   const queryObject = useMemo(() => {
@@ -116,6 +139,37 @@ const SchemesList = () => {
     setQ(uiQ);
     setSort(uiSort);
     setCurrentPage(1);
+  };
+
+  // Handle save/unsave scheme
+  const handleSaveToggle = async (schemeId) => {
+    const token = getAuthToken();
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    setSavingStates(prev => ({ ...prev, [schemeId]: true }));
+    
+    try {
+      const isCurrentlySaved = savedSchemes.has(schemeId);
+      
+      if (isCurrentlySaved) {
+        await apiRequest(`/users/me/saved-schemes/${schemeId}`, { method: 'DELETE' });
+        setSavedSchemes(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(schemeId);
+          return newSet;
+        });
+      } else {
+        await apiRequest(`/users/me/saved-schemes/${schemeId}`, { method: 'POST' });
+        setSavedSchemes(prev => new Set([...prev, schemeId]));
+      }
+    } catch (error) {
+      console.error('Failed to toggle save:', error);
+    } finally {
+      setSavingStates(prev => ({ ...prev, [schemeId]: false }));
+    }
   };
 
   // Generate page numbers for pagination
@@ -523,15 +577,44 @@ const SchemesList = () => {
                     </div>
                   )}
 
-                  {/* Action Button */}
-                  <Link
-                    to={`/schemes/${scheme._id}`}
-                    className="inline-flex items-center justify-center w-full bg-gray-700 hover:bg-gray-600 text-gray-100 px-6 py-3 rounded-lg font-medium transition-all duration-200 transform group-hover:scale-105 border border-gray-600"
-                  >
-                    <span className="mr-2">📄</span>
-                    View Full Details
-                    <span className="ml-2 group-hover:translate-x-1 transition-transform duration-200">→</span>
-                  </Link>
+                  {/* Action Buttons */}
+                  <div className="space-y-2">
+                    <Link
+                      to={`/schemes/${scheme._id}`}
+                      className="inline-flex items-center justify-center w-full bg-gray-700 hover:bg-gray-600 text-gray-100 px-6 py-3 rounded-lg font-medium transition-all duration-200 transform group-hover:scale-105 border border-gray-600"
+                    >
+                      <span className="mr-2">📄</span>
+                      View Full Details
+                      <span className="ml-2 group-hover:translate-x-1 transition-transform duration-200">→</span>
+                    </Link>
+                    
+                    <button
+                      onClick={() => handleSaveToggle(scheme._id)}
+                      disabled={savingStates[scheme._id]}
+                      className={`w-full px-4 py-2 rounded-lg font-medium transition-all duration-200 border ${
+                        savedSchemes.has(scheme._id)
+                          ? 'bg-gray-600 text-gray-100 border-gray-500'
+                          : 'bg-gray-700 hover:bg-gray-600 text-gray-300 border-gray-600'
+                      } ${savingStates[scheme._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      {savingStates[scheme._id] ? (
+                        <span className="flex items-center justify-center">
+                          <span className="loading loading-spinner loading-xs mr-2"></span>
+                          Saving...
+                        </span>
+                      ) : savedSchemes.has(scheme._id) ? (
+                        <span className="flex items-center justify-center">
+                          <span className="mr-2">💾</span>
+                          Saved
+                        </span>
+                      ) : (
+                        <span className="flex items-center justify-center">
+                          <span className="mr-2">💾</span>
+                          Save
+                        </span>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

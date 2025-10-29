@@ -93,4 +93,28 @@ export const deleteDocument = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, {}, "Document deleted successfully"));
 });
 
+export const getSavedSchemes = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id).populate({ path: "savedSchemes", model: "schemes" });
+  return res.status(200).json(new ApiResponse(200, user.savedSchemes || [], "Saved schemes"));
+});
+
+export const saveScheme = asyncHandler(async (req, res) => {
+  const { schemeId } = req.params;
+  if (!schemeId) throw new ApiError(400, "Missing schemeId");
+  const user = await User.findById(req.user._id);
+  const exists = (user.savedSchemes || []).some((id) => id.toString() === schemeId);
+  if (!exists) user.savedSchemes.push(schemeId);
+  await user.save();
+  return res.status(200).json(new ApiResponse(200, { saved: true }, "Scheme saved"));
+});
+
+export const removeSavedScheme = asyncHandler(async (req, res) => {
+  const { schemeId } = req.params;
+  if (!schemeId) throw new ApiError(400, "Missing schemeId");
+  const user = await User.findById(req.user._id);
+  user.savedSchemes = (user.savedSchemes || []).filter((id) => id.toString() !== schemeId);
+  await user.save();
+  return res.status(200).json(new ApiResponse(200, { saved: false }, "Scheme removed"));
+});
+
 
