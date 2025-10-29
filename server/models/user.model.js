@@ -4,6 +4,7 @@ const documentSchema = new Schema(
   {
     type: { type: String, required: true },
     url: { type: String, required: true },
+    publicId: { type: String }, // Cloudinary public_id for deletion
     verified: { type: Boolean, default: false },
   },
   { _id: true }
