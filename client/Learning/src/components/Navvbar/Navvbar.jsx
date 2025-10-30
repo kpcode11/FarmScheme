@@ -93,175 +93,259 @@ function Navvbar() {
   };
 
   return (
-    <Navbar fluid rounded className="bg-gray-800 border-b border-gray-700">
-      <NavbarBrand as={Link} to="/" className="hover:opacity-80 transition-opacity">
-        <span className="self-center whitespace-nowrap text-xl font-bold bg-gradient-to-r from-green-400 to-emerald-600 bg-clip-text text-transparent">
-          🌾 Farmer Sahayak
-        </span>
-      </NavbarBrand>
-      
-      <div className="flex md:order-2 items-center gap-3">
-        {/* Language Selector */}
-        <select
-          className="select select-bordered select-sm bg-gray-700 text-gray-100 border-gray-600 hover:border-gray-500 focus:border-gray-500 transition-colors"
-          onChange={(e) => {
-            const lang = e.target.value;
-            if (window.setLanguage) window.setLanguage(lang);
-            if (window.setAppLanguage) window.setAppLanguage(lang);
-          }}
-          defaultValue="en"
-        >
-          <option value="en">English</option>
-          <option value="hi">हिन्दी</option>
-          <option value="bn">বাংলা</option>
-          <option value="te">తెలుగు</option>
-          <option value="mr">मराठी</option>
-          <option value="ta">தமிழ்</option>
-          <option value="ur">اردو</option>
-          <option value="gu">ગુજરાતી</option>
-          <option value="kn">ಕನ್ನಡ</option>
-          <option value="ml">മലയാളം</option>
-          <option value="pa">ਪੰਜਾਬੀ</option>
-          <option value="or">ଓଡ଼ିଆ</option>
-          <option value="as">অসমীয়া</option>
-        </select>
+    <nav className="sticky top-0 z-50 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 shadow-lg border-b border-gray-700/50 backdrop-blur-lg">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo/Brand */}
+          <Link to="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity group">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
+              <span className="text-2xl">🌾</span>
+            </div>
+            <span className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+              Farmer Sahayak
+            </span>
+          </Link>
 
-        {user ? (
-          <div className="flex items-center gap-2">
-            {/* Saved Schemes Button */}
-            <button
-              onClick={() => navigate("/saved-schemes")}
-              className={`relative flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                location.pathname === "/saved-schemes"
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-1">
+            <Link
+              to="/"
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                location.pathname === "/"
                   ? "bg-emerald-600 text-white shadow-lg"
-                  : "bg-gray-700 text-gray-200 hover:bg-gray-600 hover:text-white border border-gray-600"
+                  : "text-gray-300 hover:text-white hover:bg-gray-700"
               }`}
-              title="View Saved Schemes"
             >
-              <SavedIcon />
-              <span className="hidden sm:inline">Saved</span>
-            </button>
+              Home
+            </Link>
+            <Link
+              to="/schemes"
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                location.pathname === "/schemes"
+                  ? "bg-emerald-600 text-white shadow-lg"
+                  : "text-gray-300 hover:text-white hover:bg-gray-700"
+              }`}
+            >
+              Schemes
+            </Link>
+            <Link
+              to="/maps"
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                location.pathname === "/maps"
+                  ? "bg-emerald-600 text-white shadow-lg"
+                  : "text-gray-300 hover:text-white hover:bg-gray-700"
+              }`}
+            >
+              Help Centers
+            </Link>
+          </div>
 
-            {/* Profile Dropdown */}
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                  profileDropdownOpen
-                    ? "bg-gray-600 text-white"
-                    : "bg-gray-700 text-gray-200 hover:bg-gray-600 hover:text-white border border-gray-600"
+          {/* Right Section */}
+          <div className="flex items-center gap-3">
+            {/* Language Selector */}
+            <div className="relative">
+              <select
+                className="pl-3 pr-8 py-2 bg-gray-700 text-gray-200 border border-gray-600 rounded-lg text-sm font-medium hover:bg-gray-600 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none appearance-none cursor-pointer"
+                onChange={(e) => {
+                  const lang = e.target.value;
+                  if (window.setLanguage) window.setLanguage(lang);
+                  if (window.setAppLanguage) window.setAppLanguage(lang);
+                }}
+                defaultValue="en"
+              >
+                <option value="en">🇬🇧 EN</option>
+                <option value="hi">🇮🇳 हिं</option>
+                <option value="bn">🇮🇳 বাং</option>
+                <option value="te">🇮🇳 తె</option>
+                <option value="mr">🇮🇳 मरा</option>
+                <option value="ta">🇮🇳 த</option>
+                <option value="ur">🇮🇳 اردو</option>
+                <option value="gu">🇮🇳 ગુ</option>
+                <option value="kn">🇮🇳 ಕ</option>
+                <option value="ml">🇮🇳 മ</option>
+                <option value="pa">🇮🇳 ਪੰ</option>
+                <option value="or">🇮🇳 ଓ</option>
+                <option value="as">🇮🇳 অ</option>
+              </select>
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+
+            {user ? (
+              <>
+                {/* Saved Schemes Button */}
+                <button
+                  onClick={() => navigate("/saved-schemes")}
+                  className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    location.pathname === "/saved-schemes"
+                      ? "bg-emerald-600 text-white shadow-lg"
+                      : "bg-gray-700 text-gray-200 hover:bg-gray-600 border border-gray-600"
+                  }`}
+                  title="View Saved Schemes"
+                >
+                  <SavedIcon />
+                  <span>Saved</span>
+                </button>
+
+                {/* Profile Dropdown */}
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all duration-200 bg-gray-700 text-gray-200 hover:bg-gray-600 border border-gray-600"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-semibold shadow-lg">
+                      {user.name?.charAt(0).toUpperCase() || "U"}
+                    </div>
+                    <span className="hidden md:inline text-sm font-medium">
+                      {user.name?.split(" ")[0] || "User"}
+                    </span>
+                    <svg className={`w-4 h-4 transition-transform ${profileDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {profileDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-56 bg-gray-800 rounded-xl shadow-2xl border border-gray-700 py-2 z-50 animate-fade-in">
+                      {/* User Info */}
+                      <div className="px-4 py-3 border-b border-gray-700">
+                        <p className="text-sm font-semibold text-white truncate">
+                          {user.name || "User"}
+                        </p>
+                        <p className="text-xs text-gray-400 truncate mt-1">
+                          {user.email || ""}
+                        </p>
+                      </div>
+                      
+                      {/* Menu Items */}
+                      <div className="py-1">
+                        <button
+                          onClick={() => {
+                            navigate("/profile");
+                            setProfileDropdownOpen(false);
+                          }}
+                          className="w-full px-4 py-2.5 text-left text-sm text-gray-200 hover:bg-gray-700 transition-colors flex items-center gap-3"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                            <ProfileIcon />
+                          </div>
+                          <span className="font-medium">Profile Settings</span>
+                        </button>
+                        
+                        <button
+                          onClick={() => {
+                            navigate("/saved-schemes");
+                            setProfileDropdownOpen(false);
+                          }}
+                          className="w-full px-4 py-2.5 text-left text-sm text-gray-200 hover:bg-gray-700 transition-colors flex items-center gap-3 md:hidden"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                            <SavedIcon />
+                          </div>
+                          <span className="font-medium">Saved Schemes</span>
+                        </button>
+                      </div>
+
+                      {/* Logout */}
+                      <div className="border-t border-gray-700 mt-1 pt-1">
+                        <button
+                          onClick={handleLogout}
+                          className="w-full px-4 py-2.5 text-left text-sm text-red-400 hover:bg-gray-700 transition-colors flex items-center gap-3"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                          </div>
+                          <span className="font-medium">Logout</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                className="px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
+              >
+                Login
+              </Link>
+            )}
+
+            {/* Mobile Menu Toggle */}
+            <button
+              onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+              className="md:hidden p-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700 transition-all"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Navigation */}
+        {profileDropdownOpen && (
+          <div className="md:hidden py-4 border-t border-gray-700">
+            <div className="space-y-1">
+              <Link
+                to="/"
+                onClick={() => setProfileDropdownOpen(false)}
+                className={`block px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                  location.pathname === "/"
+                    ? "bg-emerald-600 text-white"
+                    : "text-gray-300 hover:text-white hover:bg-gray-700"
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center text-white font-semibold text-sm">
-                    {user.name?.charAt(0).toUpperCase() || "U"}
-                  </div>
-                  <span className="hidden md:inline text-sm">
-                    {user.name?.split(" ")[0] || "User"}
-                  </span>
-                  <MenuIcon />
-                </div>
-              </button>
-
-              {/* Dropdown Menu */}
-              {profileDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-xl border border-gray-700 py-2 z-50">
-                  <div className="px-4 py-3 border-b border-gray-700">
-                    <p className="text-sm font-semibold text-white">
-                      {user.name || "User"}
-                    </p>
-                    <p className="text-xs text-gray-400 truncate">
-                      {user.email || ""}
-                    </p>
-                  </div>
-                  
-                  <button
-                    onClick={() => {
-                      navigate("/profile");
-                      setProfileDropdownOpen(false);
-                    }}
-                    className="w-full px-4 py-2 text-left text-sm text-gray-200 hover:bg-gray-700 transition-colors flex items-center gap-2"
-                  >
-                    <ProfileIcon />
-                    <span>Profile Settings</span>
-                  </button>
-                  
-                  <button
-                    onClick={handleLogout}
-                    className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-gray-700 transition-colors flex items-center gap-2"
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                      />
-                    </svg>
-                    <span>Logout</span>
-                  </button>
-                </div>
-              )}
+                Home
+              </Link>
+              <Link
+                to="/schemes"
+                onClick={() => setProfileDropdownOpen(false)}
+                className={`block px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                  location.pathname === "/schemes"
+                    ? "bg-emerald-600 text-white"
+                    : "text-gray-300 hover:text-white hover:bg-gray-700"
+                }`}
+              >
+                Schemes
+              </Link>
+              <Link
+                to="/maps"
+                onClick={() => setProfileDropdownOpen(false)}
+                className={`block px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                  location.pathname === "/maps"
+                    ? "bg-emerald-600 text-white"
+                    : "text-gray-300 hover:text-white hover:bg-gray-700"
+                }`}
+              >
+                Help Centers
+              </Link>
             </div>
           </div>
-        ) : (
-          <Button
-            as={RouterLink}
-            to="/login"
-            size="sm"
-            className="bg-emerald-600 hover:bg-emerald-700 text-white border-0 transition-all duration-200"
-          >
-            Login
-          </Button>
         )}
-        <NavbarToggle />
       </div>
-      
-      <NavbarCollapse className="bg-gray-800 md:bg-transparent">
-        <NavbarLink
-          as={Link}
-          to="/"
-          active={location.pathname === "/"}
-          className={`${
-            location.pathname === "/"
-              ? "text-emerald-400 font-semibold"
-              : "text-gray-300 hover:text-white"
-          } transition-colors`}
-        >
-          Home
-        </NavbarLink>
-        <NavbarLink
-          as={Link}
-          to="/schemes"
-          active={location.pathname === "/schemes"}
-          className={`${
-            location.pathname === "/schemes"
-              ? "text-emerald-400 font-semibold"
-              : "text-gray-300 hover:text-white"
-          } transition-colors`}
-        >
-          Schemes
-        </NavbarLink>
-        <NavbarLink
-          as={Link}
-          to="/maps"
-          active={location.pathname === "/maps"}
-          className={`${
-            location.pathname === "/maps"
-              ? "text-emerald-400 font-semibold"
-              : "text-gray-300 hover:text-white"
-          } transition-colors`}
-        >
-          Help-Centers
-        </NavbarLink>
-      </NavbarCollapse>
-    </Navbar>
+
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.2s ease-out;
+        }
+      `}</style>
+    </nav>
   );
 }
 

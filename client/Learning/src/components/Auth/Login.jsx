@@ -85,7 +85,7 @@ function Login() {
                 </div>
                 <input
                   id="email"
-                  className="w-full pl-10 pr-4 py-3 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none bg-white/50"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none bg-white/50 text-gray-900"
                   placeholder="Enter your email"
                   type="email"
                   value={email}
@@ -107,7 +107,7 @@ function Login() {
                 </div>
                 <input
                   id="password"
-                  className="w-full pl-10 pr-12 py-3 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none bg-white/50"
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none bg-white/50 text-gray-900"
                   placeholder="Enter your password"
                   type={showPassword ? "text" : "password"}
                   value={password}
@@ -144,10 +144,21 @@ function Login() {
                 />
                 <span className="text-sm text-gray-600 group-hover:text-gray-800 transition-colors">Remember me</span>
               </label>
-              <Link to="/forgot-password" className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
+              {/* <Link to="/forgot-password" className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
+                Forgot password?
+              </Link> */}
+              {/* Forgot Password Link */}
+            <div className="text-right">
+              <Link 
+                to="/forgot-password" 
+                className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+              >
                 Forgot password?
               </Link>
             </div>
+            </div>
+
+
 
             {/* Submit Button */}
             <button
