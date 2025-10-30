@@ -107,6 +107,7 @@ function Navvbar() {
           onChange={(e) => {
             const lang = e.target.value;
             if (window.setLanguage) window.setLanguage(lang);
+            if (window.setAppLanguage) window.setAppLanguage(lang);
           }}
           defaultValue="en"
         >

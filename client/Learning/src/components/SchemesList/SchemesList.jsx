@@ -3,6 +3,7 @@ import axios from "axios";
 import { API_BASE_URL } from "../../config/api.js";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { apiRequest, getAuthToken } from "../../config/api.js";
+import { isTtsSupported, speakText, stopSpeaking, speakViaCloud, getPreferredLangCode } from "../../utils/tts.js";
 
 const SchemesList = () => {
   const navigate = useNavigate();
@@ -11,6 +12,11 @@ const SchemesList = () => {
   const [error, setError] = useState(null);
   const [savedSchemes, setSavedSchemes] = useState(new Set());
   const [savingStates, setSavingStates] = useState({});
+  const [ttsAvailable, setTtsAvailable] = useState(false);
+  const [ttsPlayingMap, setTtsPlayingMap] = useState({});
+  // Refs to extract translated (visible) text per card
+  const titleRefs = React.useRef({});
+  const summaryRefs = React.useRef({});
 
   const SavedIcon = ({ className = "w-5 h-5" }) => (
     <svg
@@ -26,6 +32,18 @@ const SchemesList = () => {
         strokeWidth={2}
         d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
       />
+    </svg>
+  );
+  const SpeakerIcon = ({ className = 'w-4 h-4' }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 10H7L11 6V18L7 14H4V10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M15.54 8.46C16.4779 9.39788 17.0054 10.6699 17.0054 12C17.0054 13.3301 16.4779 14.6021 15.54 15.54" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M18.07 5.93C19.9377 7.79766 20.9974 10.337 20.9974 13C20.9974 15.663 19.9377 18.2023 18.07 20.07" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+  const StopIcon = ({ className = 'w-4 h-4' }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="6" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="2"/>
     </svg>
   );
 
@@ -59,6 +77,30 @@ const SchemesList = () => {
     if (!isNaN(limitParam)) setLimit(limitParam);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Init TTS availability
+  useEffect(() => {
+    setTtsAvailable(isTtsSupported());
+    if (isTtsSupported()) {
+      const onVoices = () => {};
+      window.speechSynthesis.onvoiceschanged = onVoices;
+    }
+  }, []);
+
+  const handleSpeak = async (text) => {
+    if (!text) return;
+    try {
+      if (isTtsSupported()) {
+        speakText(text, getPreferredLangCode());
+      } else {
+        await speakViaCloud(text, { lang: getPreferredLangCode() });
+      }
+    } catch (e) {
+      try {
+        await speakViaCloud(text, { lang: getPreferredLangCode() });
+      } catch (_) {}
+    }
+  };
 
   // Load saved schemes for logged-in users
   useEffect(() => {
@@ -560,14 +602,46 @@ const SchemesList = () => {
                     </div>
                   )}
 
-                  {/* Title */}
-                  <h3 className="text-xl font-bold text-gray-100 mb-3 group-hover:text-gray-200 transition-colors duration-200">
+                  {/* Title with TTS */}
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <h3
+                      ref={(el) => { if (el) titleRefs.current[scheme._id] = el; }}
+                      className="text-xl font-bold text-gray-100 group-hover:text-gray-200 transition-colors duration-200"
+                    >
                     {scheme.scheme_name || scheme.schemeName || "No Name"}
                   </h3>
+                    {ttsAvailable && (
+                      <div className="flex items-center gap-2">
+                        <button
+                          className="btn btn-ghost btn-xs btn-circle text-gray-200 hover:text-white"
+                          title={ttsPlayingMap[scheme._id] ? "Stop" : "Read name and summary"}
+                          onClick={() => {
+                            const isPlaying = !!ttsPlayingMap[scheme._id];
+                            if (isPlaying) {
+                              stopSpeaking();
+                              setTtsPlayingMap((s) => ({ ...s, [scheme._id]: false }));
+                            } else {
+                              const nameVis = titleRefs.current[scheme._id]?.innerText || titleRefs.current[scheme._id]?.textContent || (scheme.scheme_name || scheme.schemeName || "");
+                              const sumVis = summaryRefs.current[scheme._id]?.innerText || summaryRefs.current[scheme._id]?.textContent || (scheme.details || "");
+                              const summary = (sumVis || "").trim().slice(0, 220);
+                              const text = summary ? `${nameVis}. ${summary}` : nameVis;
+                              handleSpeak(text);
+                              setTtsPlayingMap((s) => ({ ...s, [scheme._id]: true }));
+                            }
+                          }}
+                        >
+                          {ttsPlayingMap[scheme._id] ? <StopIcon /> : <SpeakerIcon />}
+                        </button>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Description */}
                   {scheme.details && (
-                    <p className="text-gray-400 text-sm line-clamp-3 mb-4">
+                    <p
+                      ref={(el) => { if (el) summaryRefs.current[scheme._id] = el; }}
+                      className="text-gray-400 text-sm line-clamp-3 mb-4"
+                    >
                       {scheme.details.length > 150 
                         ? `${scheme.details.substring(0, 150)}...`
                         : scheme.details
@@ -596,14 +670,14 @@ const SchemesList = () => {
 
                   {/* Action Buttons */}
                   <div className="space-y-2">
-                    <Link
-                      to={`/schemes/${scheme._id}`}
-                      className="inline-flex items-center justify-center w-full bg-gray-700 hover:bg-gray-600 text-gray-100 px-6 py-3 rounded-lg font-medium transition-all duration-200 transform group-hover:scale-105 border border-gray-600"
-                    >
-                      <span className="mr-2">📄</span>
-                      View Full Details
-                      <span className="ml-2 group-hover:translate-x-1 transition-transform duration-200">→</span>
-                    </Link>
+                  <Link
+                    to={`/schemes/${scheme._id}`}
+                    className="inline-flex items-center justify-center w-full bg-gray-700 hover:bg-gray-600 text-gray-100 px-6 py-3 rounded-lg font-medium transition-all duration-200 transform group-hover:scale-105 border border-gray-600"
+                  >
+                    <span className="mr-2">📄</span>
+                    View Full Details
+                    <span className="ml-2 group-hover:translate-x-1 transition-transform duration-200">→</span>
+                  </Link>
                     
                     <button
                       onClick={() => handleSaveToggle(scheme._id)}

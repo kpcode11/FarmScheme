@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { isTtsSupported, speakText, stopSpeaking, speakViaCloud, getPreferredLangCode } from '../../../utils/tts.js';
 import { apiRequest, getAuthToken } from '../../../config/api.js';
 
 const splitIntoDocuments = (documentsText) => {
@@ -53,6 +54,13 @@ const SchemeDetail = () => {
   const [eligibilityLoading, setEligibilityLoading] = useState(false);
   const [eligibilityResult, setEligibilityResult] = useState(null);
   const [isEligibilityOpen, setIsEligibilityOpen] = useState(false);
+  const [ttsAvailable, setTtsAvailable] = useState(false);
+  const [ttsTitlePlaying, setTtsTitlePlaying] = useState(false);
+  const [ttsOverviewPlaying, setTtsOverviewPlaying] = useState(false);
+  const [ttsBenefitsPlaying, setTtsBenefitsPlaying] = useState(false);
+  const [ttsEligibilityPlaying, setTtsEligibilityPlaying] = useState(false);
+  const [ttsApplicationPlaying, setTtsApplicationPlaying] = useState(false);
+  const [ttsDocumentsPlaying, setTtsDocumentsPlaying] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [userDocs, setUserDocs] = useState([]);
@@ -63,6 +71,27 @@ const SchemeDetail = () => {
   const eligibilityRef = useRef(null);
   const applicationRef = useRef(null);
   const documentsRef = useRef(null);
+  // Refs for grabbing translated (visible) text
+  const titleTextRef = useRef(null);
+  const overviewTextRef = useRef(null);
+  const benefitsTextRef = useRef(null);
+  const eligibilityTextRef = useRef(null);
+  const applicationTextRef = useRef(null);
+  const documentsTextRef = useRef(null);
+
+  // Icons
+  const SpeakerIcon = ({ className = 'w-4 h-4' }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 10H7L11 6V18L7 14H4V10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M15.54 8.46C16.4779 9.39788 17.0054 10.6699 17.0054 12C17.0054 13.3301 16.4779 14.6021 15.54 15.54" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M18.07 5.93C19.9377 7.79766 20.9974 10.337 20.9974 13C20.9974 15.663 19.9377 18.2023 18.07 20.07" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+  const StopIcon = ({ className = 'w-4 h-4' }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="6" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="2"/>
+    </svg>
+  );
 
   useEffect(() => {
     const fetchSchemeDetail = async () => {
@@ -91,6 +120,35 @@ const SchemeDetail = () => {
       fetchSchemeDetail();
     }
   }, [schemeId]);
+
+  useEffect(() => {
+    setTtsAvailable(isTtsSupported());
+    // In some browsers voices load async
+    if (isTtsSupported()) {
+      const onVoices = () => {};
+      window.speechSynthesis.onvoiceschanged = onVoices;
+    }
+  }, []);
+
+  const handleSpeak = async (text, fromRef) => {
+    let toRead = text;
+    if (fromRef && fromRef.current) {
+      const visible = fromRef.current.innerText || fromRef.current.textContent || "";
+      if (visible && visible.trim().length > 0) toRead = visible.trim();
+    }
+    if (!toRead) return;
+    try {
+      if (isTtsSupported()) {
+        speakText(toRead, getPreferredLangCode());
+      } else {
+        await speakViaCloud(toRead, { lang: getPreferredLangCode() });
+      }
+    } catch (e) {
+      try {
+        await speakViaCloud(toRead, { lang: getPreferredLangCode() });
+      } catch (_) {}
+    }
+  };
 
   // Load user info for docs and saved state
   useEffect(() => {
@@ -228,9 +286,28 @@ const SchemeDetail = () => {
         
         <div className="flex justify-between items-start mt-4">
           <div>
-            <h1 className="text-4xl font-bold mb-2 text-white">
-              {scheme.scheme_name || scheme.schemeName || 'Scheme Details'}
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 ref={titleTextRef} className="text-4xl font-bold mb-2 text-white">
+                {scheme.scheme_name || scheme.schemeName || 'Scheme Details'}
+              </h1>
+              {ttsAvailable && (
+                <button
+                  className="btn btn-ghost btn-xs btn-circle text-gray-200 hover:text-white"
+                  title={ttsTitlePlaying ? "Stop" : "Read title"}
+                  onClick={() => {
+                    if (ttsTitlePlaying) {
+                      stopSpeaking();
+                      setTtsTitlePlaying(false);
+                    } else {
+                      handleSpeak(scheme.scheme_name || scheme.schemeName || 'Scheme Details', titleTextRef);
+                      setTtsTitlePlaying(true);
+                    }
+                  }}
+                >
+                  {ttsTitlePlaying ? <StopIcon /> : <SpeakerIcon />}
+                </button>
+              )}
+            </div>
             <p className="text-lg opacity-70 text-white">
               {scheme.schemeCategory} • {scheme.level} Level
             </p>
@@ -306,9 +383,30 @@ const SchemeDetail = () => {
         <div ref={overviewRef} id="overview-section" className="scroll-mt-32">
           <div className="card bg-base-100 shadow-xl">
             <div className="card-body">
-              <h2 className="card-title text-2xl mb-4">Overview</h2>
+              <div className="flex items-center gap-2 mb-4">
+                <h2 className="card-title text-2xl">Overview</h2>
+                {ttsAvailable && (
+                  <>
+                    <button
+                      className="btn btn-ghost btn-xs btn-circle text-gray-200 hover:text-white"
+                      title={ttsOverviewPlaying ? "Stop" : "Read overview"}
+                      onClick={() => {
+                        if (ttsOverviewPlaying) {
+                          stopSpeaking();
+                          setTtsOverviewPlaying(false);
+                        } else {
+                          handleSpeak(scheme.details || 'No detailed description available.', overviewTextRef);
+                          setTtsOverviewPlaying(true);
+                        }
+                      }}
+                    >
+                      {ttsOverviewPlaying ? <StopIcon /> : <SpeakerIcon />}
+                    </button>
+                  </>
+                )}
+              </div>
               <div className="space-y-4">
-                <p className="text-white text-lg">{scheme.details || 'No detailed description available.'}</p>
+                <p ref={overviewTextRef} className="text-white text-lg">{scheme.details || 'No detailed description available.'}</p>
                 
                 <div className="flex flex-wrap gap-2">
                   {scheme.schemeCategory && (
@@ -346,10 +444,31 @@ const SchemeDetail = () => {
         <div ref={benefitsRef} id="benefits-section" className="scroll-mt-32">
           <div className="card bg-base-100 shadow-xl">
             <div className="card-body">
-              <h2 className="card-title text-2xl mb-4">Benefits</h2>
+              <div className="flex items-center gap-2 mb-4">
+                <h2 className="card-title text-2xl">Benefits</h2>
+                {scheme.benefits && (
+                  <>
+                    <button
+                      className="btn btn-ghost btn-xs btn-circle text-gray-200 hover:text-white"
+                      title={ttsBenefitsPlaying ? "Stop" : "Read benefits"}
+                      onClick={() => {
+                        if (ttsBenefitsPlaying) {
+                          stopSpeaking();
+                          setTtsBenefitsPlaying(false);
+                        } else {
+                          handleSpeak(scheme.benefits, benefitsTextRef);
+                          setTtsBenefitsPlaying(true);
+                        }
+                      }}
+                    >
+                      {ttsBenefitsPlaying ? <StopIcon /> : <SpeakerIcon />}
+                    </button>
+                  </>
+                )}
+              </div>
               <div className="space-y-4">
                 {scheme.benefits ? (
-                  <p className="text-white text-lg">{scheme.benefits}</p>
+                  <p ref={benefitsTextRef} className="text-white text-lg">{scheme.benefits}</p>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex items-start space-x-3">
@@ -392,7 +511,28 @@ const SchemeDetail = () => {
           <div className="card bg-base-100 shadow-xl">
             <div className="card-body">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="card-title text-2xl">Eligibility Criteria</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="card-title text-2xl">Eligibility Criteria</h2>
+                  {scheme.eligibility && (
+                    <>
+                      <button
+                        className="btn btn-ghost btn-xs btn-circle text-gray-200 hover:text-white"
+                        title={ttsEligibilityPlaying ? "Stop" : "Read eligibility"}
+                        onClick={() => {
+                          if (ttsEligibilityPlaying) {
+                            stopSpeaking();
+                            setTtsEligibilityPlaying(false);
+                          } else {
+                            handleSpeak(scheme.eligibility, eligibilityTextRef);
+                            setTtsEligibilityPlaying(true);
+                          }
+                        }}
+                      >
+                        {ttsEligibilityPlaying ? <StopIcon /> : <SpeakerIcon />}
+                      </button>
+                    </>
+                  )}
+                </div>
                 <button
                   className="btn btn-accent btn-sm"
                   onClick={handleCheckEligibility}
@@ -414,7 +554,7 @@ const SchemeDetail = () => {
                 {(
                   <>
                     {scheme.eligibility && (
-                      <p className="text-white text-lg">{scheme.eligibility}</p>
+                      <p ref={eligibilityTextRef} className="text-white text-lg">{scheme.eligibility}</p>
                     )}
                     <div className="alert">
                       <div className="flex flex-col gap-2">
@@ -434,10 +574,31 @@ const SchemeDetail = () => {
         <div ref={applicationRef} id="application-section" className="scroll-mt-32">
           <div className="card bg-base-100 shadow-xl">
             <div className="card-body">
-              <h2 className="card-title text-2xl mb-4">Application Process</h2>
+              <div className="flex items-center gap-2 mb-4">
+                <h2 className="card-title text-2xl">Application Process</h2>
+                {scheme.application && (
+                  <>
+                    <button
+                      className="btn btn-ghost btn-xs btn-circle text-gray-200 hover:text-white"
+                      title={ttsApplicationPlaying ? "Stop" : "Read application process"}
+                      onClick={() => {
+                        if (ttsApplicationPlaying) {
+                          stopSpeaking();
+                          setTtsApplicationPlaying(false);
+                        } else {
+                          handleSpeak(scheme.application, applicationTextRef);
+                          setTtsApplicationPlaying(true);
+                        }
+                      }}
+                    >
+                      {ttsApplicationPlaying ? <StopIcon /> : <SpeakerIcon />}
+                    </button>
+                  </>
+                )}
+              </div>
               <div className="space-y-4">
                 {scheme.application ? (
-                  <p className="text-white text-lg">{scheme.application}</p>
+                  <p ref={applicationTextRef} className="text-white text-lg">{scheme.application}</p>
                 ) : (
                   <div className="space-y-3">
                     <div className="alert alert-info">
@@ -476,7 +637,28 @@ const SchemeDetail = () => {
         <div ref={documentsRef} id="documents-section" className="scroll-mt-32">
           <div className="card bg-base-100 shadow-xl">
             <div className="card-body">
-              <h2 className="card-title text-2xl mb-4">Required Documents</h2>
+              <div className="flex items-center gap-2 mb-4">
+                <h2 className="card-title text-2xl">Required Documents</h2>
+                {scheme.documents && (
+                  <>
+                    <button
+                      className="btn btn-ghost btn-xs btn-circle text-gray-200 hover:text-white"
+                      title={ttsDocumentsPlaying ? "Stop" : "Read documents"}
+                      onClick={() => {
+                        if (ttsDocumentsPlaying) {
+                          stopSpeaking();
+                          setTtsDocumentsPlaying(false);
+                        } else {
+                          handleSpeak(scheme.documents, documentsTextRef);
+                          setTtsDocumentsPlaying(true);
+                        }
+                      }}
+                    >
+                      {ttsDocumentsPlaying ? <StopIcon /> : <SpeakerIcon />}
+                    </button>
+                  </>
+                )}
+              </div>
               <div className="space-y-4">
                 <div className="alert alert-warning">
                   <span>Please ensure all documents are valid and clearly readable</span>
@@ -490,7 +672,7 @@ const SchemeDetail = () => {
                     return uploadedTypes.some((t) => n.includes(t) || t.includes(n));
                   };
                   return (
-                    <div className="overflow-x-auto">
+                    <div ref={documentsTextRef} className="overflow-x-auto">
                       <table className="table">
                         <thead>
                           <tr>

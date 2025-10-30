@@ -30,10 +30,12 @@ app.use(
 import schemesRouter from "./routes/schemes.routes.js";
 import authRouter from "./routes/auth.routes.js";
 import userRouter from "./routes/user.routes.js";
+import ttsRouter from "./routes/tts.routes.js";
 
 app.use("/api/v1/schemes", schemesRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/tts", ttsRouter);
 
 // Global error handler
 // eslint-disable-next-line no-unused-vars
