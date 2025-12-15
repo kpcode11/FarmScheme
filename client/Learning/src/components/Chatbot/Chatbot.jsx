@@ -14,21 +14,23 @@ function Chatbot() {
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const messagesEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
   const inputRef = useRef(null);
-  const isInitialMount = useRef(true);
+  const prevMessagesLength = useRef(messages.length);
 
-  // Scroll to bottom when new messages arrive (but not on initial mount)
+  // Scroll to bottom within chat container only when messages are added
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   };
 
   useEffect(() => {
-    // Skip auto-scroll on initial mount
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
+    // Only scroll if new messages were added (not on initial mount)
+    if (messages.length > prevMessagesLength.current) {
+      scrollToBottom();
     }
-    scrollToBottom();
+    prevMessagesLength.current = messages.length;
   }, [messages]);
 
   // Fetch suggestions on mount
@@ -137,7 +139,7 @@ function Chatbot() {
         </div>
 
         {/* Chat Messages */}
-        <div className="bg-white shadow-lg p-6 h-[500px] overflow-y-auto">
+        <div ref={chatContainerRef} className="bg-white shadow-lg p-6 h-[500px] overflow-y-auto">
           <div className="space-y-4">
             {messages.map((message, index) => (
               <div
@@ -225,7 +227,7 @@ function Chatbot() {
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type your question here..."
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all text-gray-900"
               disabled={loading}
             />
             <button

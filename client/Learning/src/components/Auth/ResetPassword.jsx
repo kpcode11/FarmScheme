@@ -86,7 +86,7 @@ function ResetPassword() {
                     </svg>
                   </div>
                   <input 
-                    className="w-full pl-12 pr-12 py-3.5 bg-white/10 border-2 border-white/20 rounded-xl text-gray-900 placeholder-white/50 focus:border-white/40 focus:ring-2 focus:ring-white/20 focus:outline-none transition-all duration-200"
+                    className="w-full pl-12 pr-12 py-3.5 bg-white/10 border-2 border-white/20 rounded-xl text-white placeholder-white/50 focus:border-white/40 focus:ring-2 focus:ring-white/20 focus:outline-none transition-all duration-200"
                     placeholder="Enter new password" 
                     type={showPassword ? "text" : "password"} 
                     value={password} 
@@ -126,7 +126,7 @@ function ResetPassword() {
                     </svg>
                   </div>
                   <input 
-                    className="w-full pl-12 pr-4 py-3.5 bg-white/10 border-2 border-white/20 rounded-xl text-gray-900 placeholder-white/50 focus:border-white/40 focus:ring-2 focus:ring-white/20 focus:outline-none transition-all duration-200"
+                    className="w-full pl-12 pr-4 py-3.5 bg-white/10 border-2 border-white/20 rounded-xl text-white placeholder-white/50 focus:border-white/40 focus:ring-2 focus:ring-white/20 focus:outline-none transition-all duration-200"
                     placeholder="Confirm your password" 
                     type={showPassword ? "text" : "password"} 
                     value={confirmPassword} 

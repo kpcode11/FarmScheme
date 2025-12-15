@@ -128,7 +128,7 @@ function ForgotPassword() {
                     </svg>
                   </div>
                   <input 
-                    className="w-full pl-12 pr-4 py-3.5 bg-white/10 border-2 border-white/20 rounded-xl text-gray-900 placeholder-white/50 focus:border-white/40 focus:ring-2 focus:ring-white/20 focus:outline-none transition-all duration-200"
+                    className="w-full pl-12 pr-4 py-3.5 bg-white/10 border-2 border-white/20 rounded-xl text-white placeholder-white/50 focus:border-white/40 focus:ring-2 focus:ring-white/20 focus:outline-none transition-all duration-200"
                     placeholder="Enter your email address" 
                     type="email" 
                     value={email} 
