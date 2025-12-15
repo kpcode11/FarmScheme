@@ -15,13 +15,19 @@ function Chatbot() {
   const [suggestions, setSuggestions] = useState([]);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const isInitialMount = useRef(true);
 
-  // Scroll to bottom when new messages arrive
+  // Scroll to bottom when new messages arrive (but not on initial mount)
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
+    // Skip auto-scroll on initial mount
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     scrollToBottom();
   }, [messages]);
 
