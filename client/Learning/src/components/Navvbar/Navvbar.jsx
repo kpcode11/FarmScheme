@@ -138,6 +138,16 @@ function Navvbar() {
             >
               Help Centers
             </Link>
+            <Link
+              to="/chatbot"
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                location.pathname === "/chatbot"
+                  ? "bg-emerald-600 text-white shadow-lg"
+                  : "text-gray-300 hover:text-white hover:bg-gray-700"
+              }`}
+            >
+              AI Assistant
+            </Link>
           </div>
 
           {/* Right Section */}
@@ -324,6 +334,17 @@ function Navvbar() {
                 }`}
               >
                 Help Centers
+              </Link>
+              <Link
+                to="/chatbot"
+                onClick={() => setProfileDropdownOpen(false)}
+                className={`block px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                  location.pathname === "/chatbot"
+                    ? "bg-emerald-600 text-white"
+                    : "text-gray-300 hover:text-white hover:bg-gray-700"
+                }`}
+              >
+                AI Assistant
               </Link>
             </div>
           </div>

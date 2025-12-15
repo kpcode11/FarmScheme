@@ -26,6 +26,7 @@ import Profile from "./components/Profile/Profile.jsx";
 import { ToastProvider } from "./context/ToastContext.jsx";
 import ResetPassword from "./components/Auth/ResetPassword.jsx";
 import ForgotPassword from "./components/Auth/ForgotPassword.jsx";
+import Chatbot from "./components/Chatbot/Chatbot.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -39,6 +40,7 @@ const router = createBrowserRouter(
       <Route path="forgot-password" element={<ForgotPassword />} />
       <Route path="reset-password" element={<ResetPassword />} />
       <Route path="maps" element={<Maps />} />
+      <Route path="chatbot" element={<Chatbot />} />
       <Route
         path="saved-schemes"
         element={

@@ -8,3 +8,6 @@ Project.docx
 Project.txt
 Mini_Project_Poster.pptx
 server/keys/tts-sa.json
+chrome_langchain_db/
+*.md/
+__pycache__/
