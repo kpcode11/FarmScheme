@@ -10,6 +10,7 @@ A comprehensive MERN stack application designed to help farmers access governmen
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Running the Application](#running-the-application)
+- [Deployment](#deployment)
 - [Project Structure](#project-structure)
 - [API Documentation](#api-documentation)
 - [Contributing](#contributing)
@@ -225,7 +226,46 @@ npm install -g concurrently
 npm run dev
 ```
 
-## 📁 Project Structure
+## � Deployment
+
+Ready to deploy your application to production? We've prepared a comprehensive deployment guide.
+
+### Quick Deployment Guide
+
+**Recommended Stack:**
+- **Frontend**: Vercel (Free)
+- **Backend**: Render (Free)
+- **Database**: MongoDB Atlas (Already set up)
+
+### Deployment Steps:
+
+1. **Deploy Backend to Render**
+   - Sign up at [render.com](https://render.com)
+   - Connect your GitHub repository
+   - Set root directory to `server`
+   - Add environment variables
+   - Deploy!
+
+2. **Deploy Frontend to Vercel**
+   - Sign up at [vercel.com](https://vercel.com)
+   - Import your GitHub repository
+   - Set root directory to `client/Learning`
+   - Add environment variables
+   - Deploy!
+
+3. **Update CORS Settings**
+   - Update backend `CORS_ORIGIN` with your Vercel URL
+
+📖 **[Complete Deployment Guide →](DEPLOYMENT.md)**
+
+The detailed guide includes:
+- Step-by-step instructions with screenshots
+- Environment variable configuration
+- Troubleshooting tips
+- Alternative deployment options
+- Free tier optimization
+
+## �📁 Project Structure
 
 ```
 farmers-support-platform/
