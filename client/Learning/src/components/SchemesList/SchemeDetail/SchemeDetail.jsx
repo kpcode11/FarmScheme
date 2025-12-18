@@ -99,7 +99,7 @@ const SchemeDetail = () => {
         setLoading(true);
         console.log('Fetching scheme with ID:', schemeId);
         
-        const response = await axios.get(`http://localhost:8001/api/v1/schemes/${schemeId}`);
+        const response = await apiRequest(`/schemes/${schemeId}`);
         
         console.log('Scheme detail response:', response.data);
         
@@ -199,7 +199,7 @@ const SchemeDetail = () => {
     try {
       setEligibilityLoading(true);
       setEligibilityResult(null);
-      const resp = await axios.get(`http://localhost:8001/api/v1/schemes/${schemeId}/eligibility-questions`);
+      const resp = await apiRequest(`/schemes/${schemeId}/eligibility-questions`);
       const questions = resp?.data?.data?.questions || [];
       setEligibilityQuestions(questions);
       const initial = {};
@@ -216,7 +216,7 @@ const SchemeDetail = () => {
     if (!schemeId) return;
     try {
       setEligibilityLoading(true);
-      const resp = await axios.post(`http://localhost:8001/api/v1/schemes/${schemeId}/check-eligibility`, { answers });
+      const resp = await apiRequest(`/schemes/${schemeId}/check-eligibility`, { method: 'POST', body: { answers } });
       setEligibilityResult(resp?.data?.data || { eligible: false, failures: [] });
     } catch (e) {
       setEligibilityResult({ eligible: false, failures: [{ key: 'submit', question: 'Submit answers', reason: e.response?.data?.message || e.message }] });

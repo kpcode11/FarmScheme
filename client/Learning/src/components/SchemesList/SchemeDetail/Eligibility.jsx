@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { apiRequest } from '../../../config/api.js';
 
 function Eligibility() {
   const { schemeId } = useParams();
@@ -26,7 +26,7 @@ function Eligibility() {
     const load = async () => {
       try {
         setLoading(true);
-        const resp = await axios.get(`http://localhost:8001/api/v1/schemes/${schemeId}/eligibility-questions`);
+        const resp = await apiRequest(`/schemes/${schemeId}/eligibility-questions`);
         const qs = resp?.data?.data?.questions || [];
         setQuestions(qs);
         const init = {};
@@ -42,7 +42,7 @@ function Eligibility() {
   const submit = async () => {
     try {
       setLoading(true);
-      const resp = await axios.post(`http://localhost:8001/api/v1/schemes/${schemeId}/check-eligibility`, { answers });
+      const resp = await apiRequest(`/schemes/${schemeId}/check-eligibility`, { method: 'POST', body: { answers } });
       setResult(resp?.data?.data || { eligible: false, failures: [] });
     } catch (e) {
       setResult({ eligible: false, failures: [{ key: 'submit', question: 'Submit answers', reason: e.response?.data?.message || e.message }] });
