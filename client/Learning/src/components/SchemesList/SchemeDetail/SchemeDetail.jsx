@@ -101,16 +101,16 @@ const SchemeDetail = () => {
         
         const response = await apiRequest(`/schemes/${schemeId}`);
         
-        console.log('Scheme detail response:', response.data);
+        console.log('Scheme detail response:', response);
         
-        if (response.data && response.data.data) {
-          setScheme(response.data.data);
+        if (response && response.data) {
+          setScheme(response.data);
         } else {
           setError('Scheme not found');
         }
       } catch (err) {
         console.error('Error fetching scheme details:', err);
-        setError(`Failed to load scheme details: ${err.response?.data?.message || err.message}`);
+        setError(`Failed to load scheme details: ${err.message || 'Unknown error'}`);
       } finally {
         setLoading(false);
       }
