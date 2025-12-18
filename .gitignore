@@ -1,4 +1,53 @@
+# Environment Variables
 .env
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+chrome_langchain_db/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Build outputs
+dist/
+build/
+*.local
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Upload directories
+server/uploads/
+client/uploads/
+
+# Keys and credentials
+server/keys/
+*.pem
+*.key
+*.json.secret
+
+# Project specific files
 myCollection.json
 Farmers.xlsx
 export.py
@@ -7,7 +56,12 @@ Group 11_Mini Project Poster.pdf
 Project.docx
 Project.txt
 Mini_Project_Poster.pptx
-server/keys/tts-sa.json
-chrome_langchain_db/
-*.md/
-__pycache__/
+updated_data.csv
+
+# Logs
+logs/
+*.log
+
+# Database
+*.sqlite3
+*.db

@@ -1,7 +1,7 @@
-const RAW_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:9000/api/v1";
+const RAW_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/v1";
 
 function normalizeBaseUrl(raw) {
-  if (!raw || typeof raw !== "string") return "http://localhost:9000/api/v1";
+  if (!raw || typeof raw !== "string") return "http://localhost:3000/api/v1";
   const trimmed = raw.trim();
   // If starts with a colon like ":9000/api/v1", prefix localhost
   if (trimmed.startsWith(":")) return `http://localhost${trimmed}`;
