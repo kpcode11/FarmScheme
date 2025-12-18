@@ -1,6 +1,8 @@
 # 🌾 Farmers Support Platform
 
 
+
+
 A comprehensive MERN stack application designed to help farmers access government schemes, get instant support through an AI-powered chatbot, and manage their profiles efficiently.
 
 ## 📋 Table of Contents
