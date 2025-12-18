@@ -27,7 +27,7 @@ function Eligibility() {
       try {
         setLoading(true);
         const resp = await apiRequest(`/schemes/${schemeId}/eligibility-questions`);
-        const qs = resp?.data?.data?.questions || [];
+        const qs = resp?.data?.questions || [];
         setQuestions(qs);
         const init = {};
         qs.forEach(q => { init[q.key] = ''; });
@@ -43,9 +43,9 @@ function Eligibility() {
     try {
       setLoading(true);
       const resp = await apiRequest(`/schemes/${schemeId}/check-eligibility`, { method: 'POST', body: { answers } });
-      setResult(resp?.data?.data || { eligible: false, failures: [] });
+      setResult(resp?.data || { eligible: false, failures: [] });
     } catch (e) {
-      setResult({ eligible: false, failures: [{ key: 'submit', question: 'Submit answers', reason: e.response?.data?.message || e.message }] });
+      setResult({ eligible: false, failures: [{ key: 'submit', question: 'Submit answers', reason: e.message || 'Unknown error' }] });
     } finally {
       setLoading(false);
     }
