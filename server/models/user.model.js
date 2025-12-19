@@ -12,6 +12,7 @@ const documentSchema = new Schema(
 
 const userSchema = new Schema(
   {
+    clerkId: { type: String, unique: true, sparse: true, index: true },
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, index: true },
     phone: { type: String },
