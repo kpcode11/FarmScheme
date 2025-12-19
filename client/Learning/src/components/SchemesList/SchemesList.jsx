@@ -139,7 +139,7 @@ const SchemesList = () => {
       try {
         setLoading(true);
         const params = new URLSearchParams(queryObject).toString();
-        const response = await axios.get(`${API_BASE_URL}/schemes?${params}`);
+        const response = await apiRequest(`/schemes?${params}`);
 
         if (response.data && response.data.data && response.data.data.scheme) {
           setSchemes(response.data.data.scheme);
