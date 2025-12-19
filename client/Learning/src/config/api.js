@@ -14,6 +14,7 @@ function normalizeBaseUrl(raw) {
 
 export const API_BASE_URL = normalizeBaseUrl(RAW_BASE).replace(/\/$/, "");
 
+// Legacy token functions kept for backward compatibility but not used with Clerk
 const TOKEN_KEY = "auth_token";
 
 export const getAuthToken = () =>
@@ -32,8 +33,11 @@ export const clearAuthToken = () => {
   sessionStorage.removeItem(TOKEN_KEY);
 };
 
-export async function apiRequest(path, { method = "GET", body, headers = {} } = {}) {
-  const token = getAuthToken();
+// Updated to work with Clerk session tokens
+export async function apiRequest(path, { method = "GET", body, headers = {}, clerkToken = null } = {}) {
+  // Use Clerk token if provided, otherwise fall back to legacy token
+  const token = clerkToken || getAuthToken();
+  
   const res = await fetch(`${API_BASE_URL}${path}`, {
     method,
     headers: {

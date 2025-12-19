@@ -2,7 +2,13 @@ import express, { json } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 
+// Load environment variables first
 dotenv.config({ path: "./.env" });
+
+// Verify Clerk environment variables
+if (!process.env.CLERK_SECRET_KEY) {
+  console.warn("⚠️  WARNING: CLERK_SECRET_KEY is not set. Authentication will fail.");
+}
 
 const app = express();
 
@@ -38,6 +44,15 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/tts", ttsRouter);
 app.use("/api/v1/chatbot", chatbotRouter);
+
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({ 
+    status: "ok", 
+    timestamp: new Date().toISOString(),
+    clerkConfigured: !!process.env.CLERK_SECRET_KEY
+  });
+});
 
 // Global error handler
 // eslint-disable-next-line no-unused-vars
