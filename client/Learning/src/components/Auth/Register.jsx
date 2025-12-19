@@ -13,8 +13,7 @@ function Register() {
 
       <div className="relative z-10">
         <SignUp 
-          routing="path"
-          path="/register"
+          routing="hash"
           signInUrl="/login"
           afterSignUpUrl="/"
           appearance={{
