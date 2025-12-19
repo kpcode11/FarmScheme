@@ -5,8 +5,13 @@ import { User } from "../models/user.model.js";
 import { cloudinary } from "../utils/cloudinary.js";
 
 export const getMe = asyncHandler(async (req, res) => {
-  // Find or create user in MongoDB based on Clerk ID
-  let user = await User.findOne({ clerkId: req.user.clerkId });
+  // Find user by Clerk ID or email (for migration from old auth)
+  let user = await User.findOne({ 
+    $or: [
+      { clerkId: req.user.clerkId },
+      { email: req.user.email }
+    ]
+  });
   
   if (!user) {
     // Create new user if doesn't exist
@@ -15,8 +20,12 @@ export const getMe = asyncHandler(async (req, res) => {
       name: req.user.name || "User",
       email: req.user.email,
       phone: req.user.phone || "",
-      passwordHash: "clerk-managed", // Not used with Clerk
+      passwordHash: "clerk-managed",
     });
+  } else if (!user.clerkId) {
+    // Update existing user with Clerk ID (migration)
+    user.clerkId = req.user.clerkId;
+    await user.save();
   }
   
   return res.status(200).json(new ApiResponse(200, user, "Fetched profile"));
@@ -28,10 +37,16 @@ export const updateMe = asyncHandler(async (req, res) => {
   delete updates.passwordHash;
   delete updates.role;
   delete updates.clerkId;
-  delete updates.email; // Email managed by Clerk
+  delete updates.email;
 
-  // Find or create user
-  let user = await User.findOne({ clerkId: req.user.clerkId });
+  // Find user by Clerk ID or email
+  let user = await User.findOne({ 
+    $or: [
+      { clerkId: req.user.clerkId },
+      { email: req.user.email }
+    ]
+  });
+  
   if (!user) {
     user = await User.create({
       clerkId: req.user.clerkId,
@@ -40,6 +55,8 @@ export const updateMe = asyncHandler(async (req, res) => {
       phone: req.user.phone || "",
       passwordHash: "clerk-managed",
     });
+  } else if (!user.clerkId) {
+    user.clerkId = req.user.clerkId;
   }
 
   // Update user
@@ -78,8 +95,14 @@ export const uploadDocument = asyncHandler(async (req, res) => {
   
   const result = await streamUpload();
   
-  // Find or create user
-  let user = await User.findOne({ clerkId: req.user.clerkId });
+  // Find user by Clerk ID or email
+  let user = await User.findOne({ 
+    $or: [
+      { clerkId: req.user.clerkId },
+      { email: req.user.email }
+    ]
+  });
+  
   if (!user) {
     user = await User.create({
       clerkId: req.user.clerkId,
@@ -88,6 +111,8 @@ export const uploadDocument = asyncHandler(async (req, res) => {
       phone: req.user.phone || "",
       passwordHash: "clerk-managed",
     });
+  } else if (!user.clerkId) {
+    user.clerkId = req.user.clerkId;
   }
   
   user.documents.push({ 
@@ -106,10 +131,21 @@ export const uploadDocument = asyncHandler(async (req, res) => {
 export const deleteDocument = asyncHandler(async (req, res) => {
   const { docId } = req.params;
   
-  // Find or create user
-  let user = await User.findOne({ clerkId: req.user.clerkId });
+  // Find user by Clerk ID or email
+  let user = await User.findOne({ 
+    $or: [
+      { clerkId: req.user.clerkId },
+      { email: req.user.email }
+    ]
+  });
+  
   if (!user) {
     throw new ApiError(404, "User not found");
+  }
+  
+  // Update clerkId if not set (migration)
+  if (!user.clerkId) {
+    user.clerkId = req.user.clerkId;
   }
   
   // Find the document
@@ -135,8 +171,14 @@ export const deleteDocument = asyncHandler(async (req, res) => {
 });
 
 export const getSavedSchemes = asyncHandler(async (req, res) => {
-  // Find or create user
-  let user = await User.findOne({ clerkId: req.user.clerkId }).populate({ path: "savedSchemes", model: "schemes" });
+  // Find user by Clerk ID or email
+  let user = await User.findOne({ 
+    $or: [
+      { clerkId: req.user.clerkId },
+      { email: req.user.email }
+    ]
+  }).populate({ path: "savedSchemes", model: "schemes" });
+  
   if (!user) {
     user = await User.create({
       clerkId: req.user.clerkId,
@@ -145,6 +187,9 @@ export const getSavedSchemes = asyncHandler(async (req, res) => {
       phone: req.user.phone || "",
       passwordHash: "clerk-managed",
     });
+  } else if (!user.clerkId) {
+    user.clerkId = req.user.clerkId;
+    await user.save();
   }
   
   return res.status(200).json(new ApiResponse(200, user.savedSchemes || [], "Saved schemes"));
@@ -154,8 +199,14 @@ export const saveScheme = asyncHandler(async (req, res) => {
   const { schemeId } = req.params;
   if (!schemeId) throw new ApiError(400, "Missing schemeId");
   
-  // Find or create user
-  let user = await User.findOne({ clerkId: req.user.clerkId });
+  // Find user by Clerk ID or email
+  let user = await User.findOne({ 
+    $or: [
+      { clerkId: req.user.clerkId },
+      { email: req.user.email }
+    ]
+  });
+  
   if (!user) {
     user = await User.create({
       clerkId: req.user.clerkId,
@@ -164,6 +215,8 @@ export const saveScheme = asyncHandler(async (req, res) => {
       phone: req.user.phone || "",
       passwordHash: "clerk-managed",
     });
+  } else if (!user.clerkId) {
+    user.clerkId = req.user.clerkId;
   }
   
   const exists = (user.savedSchemes || []).some((id) => id.toString() === schemeId);
@@ -176,10 +229,20 @@ export const removeSavedScheme = asyncHandler(async (req, res) => {
   const { schemeId } = req.params;
   if (!schemeId) throw new ApiError(400, "Missing schemeId");
   
-  // Find or create user
-  let user = await User.findOne({ clerkId: req.user.clerkId });
+  // Find user by Clerk ID or email
+  let user = await User.findOne({ 
+    $or: [
+      { clerkId: req.user.clerkId },
+      { email: req.user.email }
+    ]
+  });
+  
   if (!user) {
     throw new ApiError(404, "User not found");
+  }
+  
+  if (!user.clerkId) {
+    user.clerkId = req.user.clerkId;
   }
   
   user.savedSchemes = (user.savedSchemes || []).filter((id) => id.toString() !== schemeId);
