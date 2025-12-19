@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from '@clerk/clerk-react';
 import { apiRequest, getAuthToken } from "../../config/api.js";
 
 const SavedSchemes = () => {
   const navigate = useNavigate();
+  const { getToken, isSignedIn } = useAuth();
   const [savedSchemes, setSavedSchemes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -11,15 +13,15 @@ const SavedSchemes = () => {
 
   useEffect(() => {
     const loadSavedSchemes = async () => {
-      const token = getAuthToken();
-      if (!token) {
+      if (!isSignedIn) {
         navigate('/login');
         return;
       }
 
       try {
         setLoading(true);
-        const response = await apiRequest('/users/me/saved-schemes');
+        const token = await getToken();
+        const response = await apiRequest('/users/me/saved-schemes', { clerkToken: token });
         setSavedSchemes(response.data || []);
         setError(null);
       } catch (err) {
@@ -30,13 +32,14 @@ const SavedSchemes = () => {
     };
 
     loadSavedSchemes();
-  }, [navigate]);
+  }, [navigate, isSignedIn, getToken]);
 
   const handleRemoveSaved = async (schemeId) => {
     setRemovingStates(prev => ({ ...prev, [schemeId]: true }));
     
     try {
-      await apiRequest(`/users/me/saved-schemes/${schemeId}`, { method: 'DELETE' });
+      const token = await getToken();
+      await apiRequest(`/users/me/saved-schemes/${schemeId}`, { method: 'DELETE', clerkToken: token });
       setSavedSchemes(prev => prev.filter(scheme => (scheme._id || scheme.id) !== schemeId));
     } catch (error) {
       console.error('Failed to remove saved scheme:', error);

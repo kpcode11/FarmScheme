@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../hooks/useAuth.jsx";
+import { useAuth as useClerkAuth } from '@clerk/clerk-react';
 import { apiRequest } from "../../config/api.js";
 import { useToast } from "../../context/ToastContext.jsx";
 
 function Profile() {
   const { user, loading } = useAuth();
+  const { getToken } = useClerkAuth();
   const { pushToast } = useToast();
   const [form, setForm] = useState({
     name: "",
@@ -36,7 +38,8 @@ function Profile() {
         return;
       }
       try {
-        const res = await apiRequest("/users/me");
+        const token = await getToken();
+        const res = await apiRequest("/users/me", { clerkToken: token });
         const u = res.data || {};
         const next = {
           name: u.name || "",
@@ -69,7 +72,7 @@ function Profile() {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, getToken]);
 
   const validate = (f) => {
     const e = {};
@@ -104,7 +107,8 @@ function Profile() {
       if (payload.profile?.age !== "") payload.profile.age = Number(payload.profile.age);
       if (payload.profile?.income !== "") payload.profile.income = Number(payload.profile.income);
       if (payload.profile?.landHolding !== "") payload.profile.landHolding = Number(payload.profile.landHolding);
-      const res = await apiRequest("/users/me", { method: "PUT", body: payload });
+      const token = await getToken();
+      const res = await apiRequest("/users/me", { method: "PUT", body: payload, clerkToken: token });
       pushToast({ type: "success", message: "Profile updated" });
       setInitial(form);
     } catch (err) {
@@ -453,7 +457,8 @@ function Profile() {
                     className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 font-medium rounded-lg transition-all"
                     onClick={async () => {
                       try {
-                        await apiRequest(`/users/me/documents/${d._id}`, { method: "DELETE" });
+                        const token = await getToken();
+                        await apiRequest(`/users/me/documents/${d._id}`, { method: "DELETE", clerkToken: token });
                         setDocs((x) => x.filter((x1) => (x1._id || x1.url) !== (d._id || d.url)));
                         pushToast({ type: "success", message: "Deleted" });
                       } catch (e) {

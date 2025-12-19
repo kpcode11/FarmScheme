@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
+import { useAuth } from '@clerk/clerk-react';
 import { API_BASE_URL } from "../../config/api.js";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { apiRequest, getAuthToken } from "../../config/api.js";
@@ -39,6 +40,7 @@ const StopIcon = ({ className = 'w-4 h-4' }) => (
 
 const SchemesList = () => {
   const navigate = useNavigate();
+  const { getToken, isSignedIn } = useAuth();
   const [schemes, setSchemes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -108,11 +110,11 @@ const SchemesList = () => {
   // Load saved schemes for logged-in users
   useEffect(() => {
     const loadSavedSchemes = async () => {
-      const token = getAuthToken();
-      if (!token) return;
+      if (!isSignedIn) return;
       
       try {
-        const response = await apiRequest('/users/me/saved-schemes');
+        const token = await getToken();
+        const response = await apiRequest('/users/me/saved-schemes', { clerkToken: token });
         const saved = response.data || [];
         const savedIds = new Set(saved.map(s => s._id || s.id));
         setSavedSchemes(savedIds);
@@ -122,7 +124,7 @@ const SchemesList = () => {
     };
 
     loadSavedSchemes();
-  }, []);
+  }, [isSignedIn, getToken]);
 
   const queryObject = useMemo(() => {
     const obj = { page: currentPage, limit };
