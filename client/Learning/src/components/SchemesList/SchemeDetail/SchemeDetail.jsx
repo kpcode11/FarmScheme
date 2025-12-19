@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '@clerk/clerk-react';
 import { isTtsSupported, speakText, stopSpeaking, speakViaCloud, getPreferredLangCode } from '../../../utils/tts.js';
 import { apiRequest, getAuthToken } from '../../../config/api.js';
 
@@ -45,6 +46,7 @@ const mapToDocObjects = (items) => {
 const SchemeDetail = () => {
   const { schemeId } = useParams();
   const navigate = useNavigate();
+  const { getToken, isSignedIn } = useAuth();
   const [scheme, setScheme] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -152,21 +154,21 @@ const SchemeDetail = () => {
 
   // Load user info for docs and saved state
   useEffect(() => {
-    const token = getAuthToken();
-    if (!token) return;
+    if (!isSignedIn) return;
     (async () => {
       try {
-        const me = await apiRequest('/users/me');
+        const token = await getToken();
+        const me = await apiRequest('/users/me', { clerkToken: token });
         setUserDocs(Array.isArray(me.data?.documents) ? me.data.documents : []);
         // check saved schemes
-        const saved = await apiRequest('/users/me/saved-schemes');
+        const saved = await apiRequest('/users/me/saved-schemes', { clerkToken: token });
         const arr = Array.isArray(saved.data) ? saved.data : [];
         setIsSaved(arr.some((s) => (s?._id || s?.id) === schemeId));
       } catch (e) {
         // ignore if unauthenticated
       }
     })();
-  }, [schemeId]);
+  }, [schemeId, isSignedIn, getToken]);
 
   // Handle tab click and scroll to section
   const handleTabClick = (tabId) => {
@@ -321,18 +323,18 @@ const SchemeDetail = () => {
               className={`btn ${isSaved ? 'btn-secondary' : 'btn-outline'}`}
               disabled={saving}
               onClick={async () => {
-                const token = getAuthToken();
-                if (!token) {
+                if (!isSignedIn) {
                   navigate('/login');
                   return;
                 }
                 setSaving(true);
                 try {
+                  const token = await getToken();
                   if (isSaved) {
-                    await apiRequest(`/users/me/saved-schemes/${schemeId}`, { method: 'DELETE' });
+                    await apiRequest(`/users/me/saved-schemes/${schemeId}`, { method: 'DELETE', clerkToken: token });
                     setIsSaved(false);
                   } else {
-                    await apiRequest(`/users/me/saved-schemes/${schemeId}`, { method: 'POST' });
+                    await apiRequest(`/users/me/saved-schemes/${schemeId}`, { method: 'POST', clerkToken: token });
                     setIsSaved(true);
                   }
                 } catch (e) {
