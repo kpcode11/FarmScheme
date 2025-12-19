@@ -207,8 +207,7 @@ const SchemesList = () => {
 
   // Handle save/unsave scheme
   const handleSaveToggle = async (schemeId) => {
-    const token = getAuthToken();
-    if (!token) {
+    if (!isSignedIn) {
       navigate('/login');
       return;
     }
@@ -216,17 +215,18 @@ const SchemesList = () => {
     setSavingStates(prev => ({ ...prev, [schemeId]: true }));
     
     try {
+      const token = await getToken();
       const isCurrentlySaved = savedSchemes.has(schemeId);
       
       if (isCurrentlySaved) {
-        await apiRequest(`/users/me/saved-schemes/${schemeId}`, { method: 'DELETE' });
+        await apiRequest(`/users/me/saved-schemes/${schemeId}`, { method: 'DELETE', clerkToken: token });
         setSavedSchemes(prev => {
           const newSet = new Set(prev);
           newSet.delete(schemeId);
           return newSet;
         });
       } else {
-        await apiRequest(`/users/me/saved-schemes/${schemeId}`, { method: 'POST' });
+        await apiRequest(`/users/me/saved-schemes/${schemeId}`, { method: 'POST', clerkToken: token });
         setSavedSchemes(prev => new Set([...prev, schemeId]));
       }
     } catch (error) {
